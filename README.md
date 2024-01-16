@@ -1,15 +1,8 @@
-# auto-komen-shopee
-auto coment shope
+# CARA PEMAKAIAN.
+GAK USAH RIBET-RIBET AMBIL DATA TINGGAL RUN AJH!!<br>
+cara run: <b>php ShopeeRun.php</b><br>
+<b>JANGAN LUPA DIPASANG XAMPPNYA DLU YA ANJG!!</b><br>
+![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/246257f4-48fe-4134-a2d0-dee62b7e93f0)
 
-
-# cara ambil data untuk komen.
-
-f12 / ie >> coba komen sekali untuk ambil data<br>
-dan jangan lupa diclear dlu history networknya<br>
-jika sudah diclear langsung ajh kirim komen di live<br>
-<br>
-cari yang namanya message dan klik kanan copy >> copy as curl BASH<br>
-<br>
-lalu cari uuid dan usersig <br>
 
  
