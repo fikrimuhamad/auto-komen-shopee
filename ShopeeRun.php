@@ -2,8 +2,15 @@
 date_default_timezone_set('Asia/Jakarta');
 
 cariLagi:
-echo "\PESAN :\n";
-echo "EDIT KATA-KATA UNTUK BOT PADA FILE keyword.php\n";
+echo "\nKATA-KATA PADA FILE KEYWORD YANG TERSEDIA\n";
+$keywordData = include "keyword.php";
+
+// Menampilkan semua data pada $keywordData
+foreach ($keywordData as $keyword => $response) {
+    echo "Keyword: $keyword, Response: $response\n";
+}
+echo "\n\nPESAN :\n";
+echo "EDIT KATA-KATA DIATAS PADA FILE keyword.php\n";
 echo "----------- [ MENU ] -----------\n";
 echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN\n\n";
 echo "1. AUTO KOMEN + GET KOMEN + BANNED FILTER KATA-KATA\n";
