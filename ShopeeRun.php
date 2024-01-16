@@ -13,7 +13,7 @@ echo "\n\nPESAN :\n";
 echo "EDIT KATA-KATA DIATAS PADA FILE keyword.php\n";
 echo "----------- [ MENU ] -----------\n";
 echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN\n\n";
-echo "1. AUTO KOMEN + GET KOMEN + BANNED FILTER KATA-KATA\n";
+echo "1. AUTO KOMEN + GET KOMEN + BANNED FILTER KATA-KATA + AUTO GET USERSIG\n";
 echo "2. GET KOMEN + BANNED FILTER KATA-KATA\n";
 
 $pilihNomor =  pilihan("TENTUKAN PILIHAN ANDA ??\n");
