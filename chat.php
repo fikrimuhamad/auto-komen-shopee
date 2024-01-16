@@ -1,6 +1,11 @@
 <?php
 date_default_timezone_set('Asia/Jakarta');
 
+//UBAH BAGIAN SINI SAJA!!
+$cookiesFilePath = 'cookieS.txt';
+$banwordFilePath = 'bannedText.txt';
+//BAGIAN BAWAH JANGAN DIUTAK ATIK YA BANG!!
+
 function readCookiesFromFile($filePath) {
     try {
         $cookies = file_get_contents($filePath);
@@ -22,9 +27,6 @@ function readBannedWordsFromFile($filePath) {
         return [];
     }
 }
-
-$cookiesFilePath = 'cookies.txt';
-$banwordFilePath = 'bannedText.txt';
 
 $cookies = readCookiesFromFile($cookiesFilePath);
 
