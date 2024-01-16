@@ -1,13 +1,6 @@
 <?php
 date_default_timezone_set('Asia/Jakarta');
 
-echo "===| ENTER USERSIG DATA |==\n";
-$usersig = input("");
-if(empty($usersig)){
-    echo'USERSIG TIDAK BOLEH KOSONG!!';
-    exit;
-}
-
 function readCookiesFromFile($filePath) {
     try {
         $cookies = file_get_contents($filePath);
@@ -84,7 +77,6 @@ function getSessionId() {
             echo 'UUID / DEVICEID LIVE: ' . $deviceId . PHP_EOL;
             echo 'CHATROOM LIVE: ' . $chatroomId . PHP_EOL;
             echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
-            echo 'USERSIG LIVE: ' . $usersig . PHP_EOL . PHP_EOL;
 
             checkMessage();
         } else {
@@ -95,11 +87,37 @@ function getSessionId() {
     }
 }
 
-function input($text)
-{
-    echo $text . " => : ";
-    $a = trim(fgets(STDIN));
-    return $a;
+function getUsersig() {
+    global $sessionId, $deviceId, $cookies, $usersig;
+    $sessionUrl = "https://live.shopee.co.id/webapi/v1/session/$sessionId/preview?uuid=$deviceId&ver=2";
+
+    $options = [
+        'http' => [
+            'header' => 'Cookie: ' . $cookies,
+            'referer' => "https://live.shopee.co.id/pc/preview?session=$sessionId",
+        ],
+    ];
+
+    $context = stream_context_create($options);
+
+    $response = file_get_contents($sessionUrl, false, $context);
+    if ($response) {
+        $sessionData = json_decode($response, true);
+
+        if ($sessionData && $sessionData['err_code'] === 0 && $sessionData['data'] && $sessionData['data']['usersig']) {
+            $usersig = $sessionData['data']['usersig'];
+
+            echo 'USERSIG LIVE: ' . $usersig . PHP_EOL . PHP_EOL;
+
+            // Return the session ID for further use
+            return $sessionId;
+        } else {
+            echo 'Error getting session ID: ' . $sessionData['err_msg'] . PHP_EOL;
+        }
+    } else {
+        echo 'Error getting session ID.' . PHP_EOL;
+    }
+    
 }
 
 function containsBannedWords($content) {
@@ -343,6 +361,7 @@ if (!empty($message)) {
 }
 
 getSessionId();
+getUsersig();
 
 while (true) {
     $startTime = microtime(true); // Waktu awal eksekusi
