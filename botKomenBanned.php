@@ -79,10 +79,10 @@ function getSessionId() {
             echo 'SELLER ID: ' . $sellerId . PHP_EOL;
                     
             echo PHP_EOL . '===| LIVE INFO |===' . PHP_EOL;
-            echo 'USERSIG LIVE: ' . $usersig . PHP_EOL;
             echo 'UUID / DEVICEID LIVE: ' . $deviceId . PHP_EOL;
             echo 'CHATROOM LIVE: ' . $chatroomId . PHP_EOL;
-            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL . PHP_EOL;
+            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
+            echo 'USERSIG LIVE: ' . $usersig . PHP_EOL . PHP_EOL;
 
             checkMessage();
         } else {
@@ -197,7 +197,7 @@ function komenLive($message) {
 }
 
 function checkMessage() {
-    global $chatroomId, $deviceId, $cookies, $processedMessages, $bannedUsers, $sessionId, $user, $lastBotMessageID, $userLastResponseTime;
+    global $chatroomId, $deviceId, $cookies, $processedMessages, $bannedUsers, $sessionId, $user, $lastBotMessageID, $userLastResponseTime, $sellerId;
 
     $apiUrl = 'https://chatroom-live.shopee.co.id/api/v1/fetch/chatroom/' . $chatroomId . '/message?uuid=' . $deviceId;
 
@@ -244,7 +244,11 @@ function checkMessage() {
     });
 
     foreach ($newMessages as $message) {
-        
+        $user = $message['uid'];
+        if ($sellerId === $user) {
+            // Continue to the next iteration if the user is the seller
+            continue;
+        }
 
         // Print extracted data for new messages
         if (!empty($newMessages)) {
@@ -256,7 +260,6 @@ function checkMessage() {
             echo "MESSAGE: " . $message['content'] . "\n";
             echo "STATUS: ";
 
-            $user = $message['uid'];
 
         
             // Add the processed message to the array
@@ -337,20 +340,11 @@ if (!empty($message)) {
 }
 }
 
-
-
-
 getSessionId();
 
 while (true) {
     $startTime = microtime(true); // Waktu awal eksekusi
-     // Check if the user is the seller
-     if ($sellerId === $user) {
-        // Continue to the next iteration if the user is the seller
-        continue;
-    }
     checkMessage();
-    
     $endTime = microtime(true); // Waktu setelah eksekusi checkMessage
     $elapsedTime = $endTime - $startTime; // Waktu yang diperlukan untuk eksekusi checkMessage
     // Jika waktu yang diperlukan kurang dari 5 detik, tunggu selama (5 - elapsedTime) detik
