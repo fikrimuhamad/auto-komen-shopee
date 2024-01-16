@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('Asia/Jakarta');
+
 echo "===| ENTER USERSIG DATA |==\n";
 $usersig = input("");
 if(empty($usersig)){
