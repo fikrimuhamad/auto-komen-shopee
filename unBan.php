@@ -51,7 +51,7 @@ function getSessionId()
 }
 unBanLagi:
 getSessionId();
-$uid =  pilihan("ID\n");
+$uid =  pilihan("UID USER UNBANN");
 $banUrl = 'https://live.shopee.co.id/webapi/v1/session/' . $sessionId . '/comment/ban';
 
 $postData = [
