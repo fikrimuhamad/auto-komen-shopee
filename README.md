@@ -4,7 +4,6 @@
 <br><br>
 GAK USAH RIBET-RIBET AMBIL DATA TINGGAL RUN AJH!!<br>
 cara run: <b>php ShopeeRun.php</b><br>
-![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/cb4bc234-050f-4cd1-88a2-93c3ea6ed6da)
 
 
- 
+![Cuplikan layar 2024-01-16 182549](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/cea9f70e-e559-4334-b2d1-17a9ba8c198c)
