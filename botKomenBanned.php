@@ -1,4 +1,10 @@
 <?php
+echo "===| ENTER USERSIG DATA |==\n";
+$usersig = input("");
+if(empty($usersig)){
+    echo'USERSIG TIDAK BOLEH KOSONG!!';
+    exit;
+}
 
 function readCookiesFromFile($filePath) {
     try {
@@ -42,7 +48,7 @@ $bannedUsers = [];
 $processedMessages = [];
 $lastBotMessageID = [];
 function getSessionId() {
-    global $cookies, $sessionId, $chatroomId, $deviceId, $sellerId;
+    global $cookies, $sessionId, $chatroomId, $deviceId, $sellerId, $usersig;
 
     $sessionUrl = 'https://live.shopee.co.id/webapi/v1/session';
 
@@ -73,9 +79,10 @@ function getSessionId() {
             echo 'SELLER ID: ' . $sellerId . PHP_EOL;
                     
             echo PHP_EOL . '===| LIVE INFO |===' . PHP_EOL;
+            echo 'USERSIG LIVE: ' . $usersig . PHP_EOL . PHP_EOL;
             echo 'UUID / DEVICEID LIVE: ' . $deviceId . PHP_EOL;
             echo 'CHATROOM LIVE: ' . $chatroomId . PHP_EOL;
-            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL . PHP_EOL;
+            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
 
             checkMessage();
         } else {
@@ -84,6 +91,13 @@ function getSessionId() {
     } else {
         echo 'Error getting session ID.' . PHP_EOL;
     }
+}
+
+function input($text)
+{
+    echo $text . " => : ";
+    $a = trim(fgets(STDIN));
+    return $a;
 }
 
 function containsBannedWords($content) {
@@ -130,13 +144,13 @@ function banUser($uid) {
 }
 
 function komenLive($message) {
-    global $sessionId, $cookies, $deviceId, $responseKomen;
+    global $sessionId, $cookies, $deviceId, $responseKomen, $usersig;
 
     $komenUrl = 'https://live.shopee.co.id/webapi/v1/session/' . $sessionId . '/message';
 
     $postData = [
         'uuid' => $deviceId,
-        'usersig' => '4HD5VldtjnHalj78p3YYhjWmLwrProXcdhJLL8Hyll1cREcPH90snvJnokFtFsqUCriWK4ICexeAFvcgxEjhG2sUgTdRd0RCXtnH-hxc9daUNWuVA83IjN0mYw==',
+        'usersig' => $usersig,
         'content' => '{"type":101,"content":"' . $message . '"}',
         'pin' => false,
     ];
