@@ -79,10 +79,10 @@ function getSessionId() {
             echo 'SELLER ID: ' . $sellerId . PHP_EOL;
                     
             echo PHP_EOL . '===| LIVE INFO |===' . PHP_EOL;
-            echo 'USERSIG LIVE: ' . $usersig . PHP_EOL . PHP_EOL;
+            echo 'USERSIG LIVE: ' . $usersig . PHP_EOL;
             echo 'UUID / DEVICEID LIVE: ' . $deviceId . PHP_EOL;
             echo 'CHATROOM LIVE: ' . $chatroomId . PHP_EOL;
-            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
+            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL . PHP_EOL;
 
             checkMessage();
         } else {
