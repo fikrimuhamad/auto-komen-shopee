@@ -31,8 +31,13 @@ function readCookiesFromFile($filePath)
 function readBannedWordsFromFile($filePath)
 {
     try {
-        $bannedWords = file_get_contents($filePath);
         $bannedWords = explode("\n", $bannedWords);
+
+        // Menghapus string kosong atau yang hanya terdiri dari spasi dari $bannedWords
+        $bannedWords = array_filter($bannedWords, function($word) {
+            return trim($word) !== '';
+        });
+
         $bannedWords = array_map('trim', $bannedWords);
         return $bannedWords;
     } catch (Exception $error) {
