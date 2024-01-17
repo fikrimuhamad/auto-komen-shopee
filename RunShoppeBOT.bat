@@ -8,4 +8,4 @@ IF NOT EXIST "%PHP_PATH%" (
     exit /b
 )
 
-    start cmd /k php RUNShopee.php
+    start cmd /k php runShopee.php
