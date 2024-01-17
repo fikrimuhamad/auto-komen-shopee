@@ -1,21 +1,86 @@
 <?php
+date_default_timezone_set('Asia/Jakarta');
+echo "----------- [ MASUKKAN SESSIONID LIVE ] -----------\n";
+$sessionLive =  input("");
 
-echo "\nKATA-KATA PADA FILE KEYWORD YANG TERSEDIA\n";
-$keywordData = include "keyword.php";
+inputLagi:
+echo "--------------------- [ MENU ] ------------------------\n";
+echo "SILAHKAN PILIH TOOLS YANG ANDA INGIN GUNAKAN\n\n";
+echo "1. BOT AUTO KOMEN + AUTO GET USERSIG + BANNED FILTER KATA-KATA\n";
+echo "2. RANDOM PIN PRODUK SETIAP 1 MENIT\n";
 
-// Menampilkan semua data pada $keywordData
-foreach ($keywordData as $keyword => $response) {
-    echo "Keyword: $keyword, Response: $response\n";
+$menuSelect =  input("TENTUKAN PILIHAN ANDA ??\n");
+if ($menuSelect == 1) {
+    echo "\nKATA-KATA PADA FILE KEYWORD YANG TERSEDIA\n";
+    $keywordData = include "keyword.php";
+
+    // Menampilkan semua data pada $keywordData
+    foreach ($keywordData as $keyword => $response) {
+        echo "Keyword: $keyword, Response: $response\n";
+    }
+    echo "\n\nPESAN :\n";
+    echo "EDIT KATA-KATA DIATAS PADA FILE keyword.php\n";
+
+    $cookiesFilePath = 'cookie.txt';
+    $banwordFilePath = 'bannedText.txt';
+
+    $cookies = readCookiesFromFile($cookiesFilePath);
+    $bannedWords = readBannedWordsFromFile($banwordFilePath);
+
+    if (!$cookies) {
+        error_log('Cookies not available. Please check your cookies.txt file.');
+        exit(1);
+    }
+
+    $sessionId = null;
+    $chatroomId = null;
+    $deviceId = null;
+
+    $bannedUsers = [];
+    $processedMessages = [];
+    $lastBotMessageID = [];
+
+    getData();
+    getSessionId();
+
+    while (true) {
+        $startTime = microtime(true); // Waktu awal eksekusi
+        checkMessage();
+        $endTime = microtime(true); // Waktu setelah eksekusi checkMessage
+        $elapsedTime = $endTime - $startTime; // Waktu yang diperlukan untuk eksekusi checkMessage
+        // Jika waktu yang diperlukan kurang dari 5 detik, tunggu selama (5 - elapsedTime) detik
+        if ($elapsedTime < 5) {
+            sleep(5 - $elapsedTime);
+        } else {
+            // Jika waktu yang diperlukan lebih dari atau sama dengan 5 detik, tetap tidur selama 3 detik
+            sleep(3);
+        }
+    }
+} elseif ($menuSelect == 2) {
+    // Fungsi untuk membaca cookies dari file
+    $cookiesFilePath = 'cookie.txt';
+    $cookies = readCookiesFromFile($cookiesFilePath);
+    if (!$cookies) {
+        error_log('Cookies not available. Please check your cookies.txt file.');
+        exit(1);
+    }
+    getData();
+    getSessionId();
+
+    while (true) {
+        showItem();
+    }
+} else {
+    echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!\n";
+    goto inputLagi;
 }
-echo "\n\nPESAN :\n";
-echo "EDIT KATA-KATA DIATAS PADA FILE keyword.php\n\n";
-echo "MASUKKAN SESSIONID LIVE KALIAN\n";
 
-$sessionLive =  id("SESSION ID");
-
-$cookiesFilePath = 'cookie.txt';
-$banwordFilePath = 'bannedText.txt';
-
+function input($text)
+{
+    echo $text . "  => : ";
+    $select = trim(fgets(STDIN));
+    return $select;
+}
 
 function readCookiesFromFile($filePath)
 {
@@ -33,12 +98,10 @@ function readBannedWordsFromFile($filePath)
     try {
         $bannedWords = file_get_contents($filePath);
         $bannedWords = explode("\n", $bannedWords);
-
         // Menghapus string kosong atau yang hanya terdiri dari spasi dari $bannedWords
-        $bannedWords = array_filter($bannedWords, function($word) {
+        $bannedWords = array_filter($bannedWords, function ($word) {
             return trim($word) !== '';
         });
-
         $bannedWords = array_map('trim', $bannedWords);
         return $bannedWords;
     } catch (Exception $error) {
@@ -47,27 +110,10 @@ function readBannedWordsFromFile($filePath)
     }
 }
 
-
-$cookies = readCookiesFromFile($cookiesFilePath);
-
-if (!$cookies) {
-    error_log('Cookies not available. Please check your cookies.txt file.');
-    exit(1);
-}
-
-$bannedWords = readBannedWordsFromFile($banwordFilePath);
-
-$sessionId = null;
-$chatroomId = null;
-$deviceId = null;
-
-$bannedUsers = [];
-$processedMessages = [];
-$lastBotMessageID = [];
-
-function getData($sessionLive)
+//get fake data live
+function getData()
 {
-    global $cookies, $sessionId, $deviceId;
+    global $cookies, $sessionId, $deviceId, $sessionLive;
 
     $sessionUrl = "https://live.shopee.co.id/webapi/v1/session/$sessionLive/preview?uuid=sd" . $sessionLive . "sd&ver=2";
 
@@ -99,7 +145,7 @@ function getData($sessionLive)
     }
 }
 
-
+//get data live
 function getSessionId()
 {
     global $cookies, $sessionId, $chatroomId, $deviceId, $sellerId, $usersig;
@@ -141,7 +187,7 @@ function getSessionId()
             echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
             echo 'USERSIG LIVE: ' . $usersig . PHP_EOL . PHP_EOL;
 
-            checkMessage();
+            getData();
 
             // Return the session ID for further use
         } else {
@@ -161,6 +207,7 @@ function containsBannedWords($content)
     }, false);
 }
 
+//ban user
 function banUser($uid)
 {
     global $sessionId, $cookies;
@@ -196,6 +243,7 @@ function banUser($uid)
     }
 }
 
+//bot komen
 function komenLive($message)
 {
     global $sessionId, $cookies, $deviceId, $responseKomen, $usersig;
@@ -250,6 +298,7 @@ function komenLive($message)
     }
 }
 
+//auto komen + ban filter kata-kata
 function checkMessage()
 {
     global $chatroomId, $deviceId, $cookies, $processedMessages, $bannedUsers, $sessionId, $user, $lastBotMessageID, $userLastResponseTime, $sellerId;
@@ -308,7 +357,7 @@ function checkMessage()
         // Print extracted data for new messages
         if (!empty($newMessages)) {
             $date = date('d/m H:i:s', $timestamp);
-            echo "===| NEW MESSAGE |==\n";
+            echo "===| NEW MESSAGE |===\n";
             echo "TIME: " . $date . "\n";
             echo "UID: " . $message['uid'] . "\n";
             echo "NAMA: " . $message['display_name'] . " ( " . $message['nickname'] . " )\n";
@@ -325,7 +374,7 @@ function checkMessage()
                 echo 'DITEMUKAN KATA-KATA YANG DIFILTER!!' . PHP_EOL;
 
                 if (!in_array($message['uid'], $bannedUsers)) {
-                    banUser($message['uid'], $cookies, $sessionId);
+                    banUser($message['uid']);
                     $bannedUsers[] = $message['uid'];
                 } else {
                     echo 'USER SUDAH DIBANNED CHAT!! SKIP!!' . PHP_EOL . PHP_EOL;
@@ -381,26 +430,99 @@ function checkMessage()
         file_put_contents($messageFilePath, '');
     }
 }
-getData($sessionLive);
-getSessionId();
 
-while (true) {
-    $startTime = microtime(true); // Waktu awal eksekusi
-    checkMessage();
-    $endTime = microtime(true); // Waktu setelah eksekusi checkMessage
-    $elapsedTime = $endTime - $startTime; // Waktu yang diperlukan untuk eksekusi checkMessage
-    // Jika waktu yang diperlukan kurang dari 5 detik, tunggu selama (5 - elapsedTime) detik
-    if ($elapsedTime < 5) {
-        sleep(5 - $elapsedTime);
+//pin produk
+function getItemData()
+{
+    global $cookies, $sessionId, $acakNomorProduk, $DataItem, $produkItem, $totalProduk;
+
+    $sessionUrl = "https://live.shopee.co.id/webapi/v1/session/$sessionId/host/items?visible=true&offset=0&limit=100";
+
+    $options = [
+        'http' => [
+            'header' => 'Cookie: ' . $cookies,
+            'referer' => "https://live.shopee.co.id/pc/preview?session=$sessionId",
+        ],
+    ];
+
+    $context = stream_context_create($options);
+
+    $sessionData = file_get_contents($sessionUrl, false, $context);
+    if ($sessionData) {
+        // Decode JSON string into an array
+        $sessionData = json_decode($sessionData, true);
+
+        // Check if 'total_count' is greater than 0
+        if ($sessionData['data']['total_count'] > 0) {
+            // Get total count
+            $totalProduk = $sessionData['data']['total_count'];
+
+            // Generate random index
+            $acakNomorProduk = mt_rand(0, $totalProduk - 1);
+
+            // Get random item data
+            $NoProduk = $sessionData['data']['items'][$acakNomorProduk];
+            $produkItem = "ID: " . $NoProduk['item_id'] . "\nNAMA: " . $NoProduk['name'];
+
+            // Modify the response data to include only the random item
+            $sessionData = $NoProduk;
+        } else {
+            // If total_count is 0, set response to an empty array
+            $sessionData = array();
+        }
+
+        // Encode modified response back to JSON
+        $DataItem = json_encode($sessionData);
+
+        // Return the modified response
+        return $DataItem;
     } else {
-        // Jika waktu yang diperlukan lebih dari atau sama dengan 5 detik, tetap tidur selama 3 detik
-        sleep(3);
+        // Return an error message if JSON decoding fails
+        return 'Error decoding JSON data.';
     }
 }
 
-function id($text)
+function showItem()
 {
-    echo $text . " => : ";
-    $select = trim(fgets(STDIN));
-    return $select;
+    global $cookies, $sessionId, $DataItem, $acakNomorProduk, $produkItem, $totalProduk, $jedaSleep;
+    // Panggil fungsi getItemData() terlebih dahulu
+
+    $sessionIdData = "https://live.shopee.co.id/webapi/v1/session/$sessionId/show";
+
+    $data = [
+        'item' => $DataItem, // Ubah $DataItem menjadi array
+    ];
+
+    $options = array(
+        'http' => array(
+            'header'  => "Content-type: application/json\r\n" .
+                'Cookie: ' . $cookies,
+            'method'  => 'POST',
+            'content' => json_encode($data), // Ubah 'content' menjadi json_encode($data)
+        ),
+    );
+
+    $context = stream_context_create($options);
+
+    $sessionIdData = file_get_contents($sessionIdData, false, $context);
+
+    if ($sessionIdData) {
+        // Decode JSON string into an array
+        $sessionIdData = json_decode($sessionIdData, true);
+        getItemData();
+
+        if ($sessionIdData['err_code'] === 0) {
+            $statusPinProduk = $sessionIdData['err_msg'];
+            echo "SET PIN ETALASE NO " . $acakNomorProduk + 1 . "\n$produkItem\n";
+            echo "STATUS PIN PRODUK: ";
+            sleep(10);
+            echo strtoupper($statusPinProduk) . " MENAMPILKAN ETALASE NO " . $acakNomorProduk + 1 . "!!\n\n";
+
+            // Return the session ID for further use
+        } else {
+            echo 'Error getting session ID: ' . $sessionIdData['err_msg'] . PHP_EOL;
+        }
+    } else {
+        echo 'Error decoding JSON data.' . PHP_EOL;
+    }
 }
