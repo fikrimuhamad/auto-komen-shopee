@@ -515,7 +515,7 @@ function showItem()
             $statusPinProduk = $sessionIdData['err_msg'];
             echo "SET PIN ETALASE NO " . $acakNomorProduk + 1 . "\n$produkItem\n";
             echo "STATUS PIN PRODUK: ";
-            sleep(10);
+            sleep(60);
             echo strtoupper($statusPinProduk) . " MENAMPILKAN ETALASE NO " . $acakNomorProduk + 1 . "!!\n\n";
 
             // Return the session ID for further use
