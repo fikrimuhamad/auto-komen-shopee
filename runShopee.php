@@ -4,10 +4,11 @@ echo "----------- [ MASUKKAN SESSIONID LIVE ] -----------\n";
 $sessionLive =  input("");
 
 inputLagi:
-echo "--------------------- [ MENU ] ------------------------\n";
-echo "SILAHKAN PILIH TOOLS YANG ANDA INGIN GUNAKAN\n\n";
-echo "1. BOT AUTO KOMEN + AUTO GET USERSIG + BANNED FILTER KATA-KATA\n";
-echo "2. RANDOM PIN PRODUK SETIAP 1 MENIT\n";
+echo "----------- [ MENU ] -----------\n";
+echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN\n\n";
+echo "1. BOT AUTO KOMEN + AUTO GET USERSIG + AUTO BANNED FILTER KATA-KATA\n";
+echo "2. GET KOMEN + AUTO BANNED FILTER KATA-KATA\n";
+echo "3. RANDOM PIN PRODUK SETIAP 1 MENIT\n";
 
 $menuSelect =  input("TENTUKAN PILIHAN ANDA ??\n");
 if ($menuSelect == 1) {
@@ -57,6 +58,48 @@ if ($menuSelect == 1) {
         }
     }
 } elseif ($menuSelect == 2) {
+    $cookiesFilePath = 'cookie.txt';
+    $banwordFilePath = 'bannedText.txt';
+
+
+    $cookies = readCookiesFromFile($cookiesFilePath);
+    $bannedWords = readBannedWordsFromFile($banwordFilePath);
+
+    if (!$cookies) {
+        error_log('Cookies not available. Please check your cookies.txt file.');
+        exit(1);
+    }
+
+
+    $sessionId = null;
+    $chatroomId = null;
+    $deviceId = null;
+
+    $bannedUsers = [];
+    $processedMessages = [];
+    $lastBotMessageID = [];
+
+    getData();
+    getSessionId();
+
+    while (true) {
+        $startTime = microtime(true); // Waktu awal eksekusi
+
+        GetMessage();
+
+        $endTime = microtime(true); // Waktu setelah eksekusi checkMessage
+
+        $elapsedTime = $endTime - $startTime; // Waktu yang diperlukan untuk eksekusi checkMessage
+
+        // Jika waktu yang diperlukan kurang dari 5 detik, tunggu selama (5 - elapsedTime) detik
+        if ($elapsedTime < 5) {
+            sleep(5 - $elapsedTime);
+        } else {
+            // Jika waktu yang diperlukan lebih dari atau sama dengan 5 detik, tetap tidur selama 3 detik
+            sleep(3);
+        }
+    }
+} elseif ($menuSelect == 3) {
     // Fungsi untuk membaca cookies dari file
     $cookiesFilePath = 'cookie.txt';
     $cookies = readCookiesFromFile($cookiesFilePath);
@@ -428,6 +471,89 @@ function checkMessage()
 
         // Menghapus isi file agar tidak dikirim lagi
         file_put_contents($messageFilePath, '');
+    }
+}
+
+function GetMessage()
+{
+    global $chatroomId, $deviceId, $cookies, $processedMessages, $bannedUsers, $sessionId, $sellerId;
+
+    $apiUrl = 'https://chatroom-live.shopee.co.id/api/v1/fetch/chatroom/' . $chatroomId . '/message?uuid=' . $deviceId;
+
+    $options = [
+        'http' => [
+            'header' => 'Cookie: ' . $cookies,
+        ],
+    ];
+
+    $context = stream_context_create($options);
+
+    $response = file_get_contents($apiUrl, false, $context);
+
+    if ($response === false) {
+        echo 'Error making request.' . PHP_EOL;
+        return null; // Return null in case of an error
+    }
+
+    // Extract data from JSON response
+    $responseJson = json_decode($response, true);
+
+    // Check if data is available
+    if (isset($responseJson['data']['message'][0]['msgs'])) {
+        $messages = $responseJson['data']['message'][0]['msgs'];
+        $timestamp = $responseJson['data']['timestamp'];
+
+        // Extract id, display_name, and content
+        $extractedData = array_map(function ($message) {
+            return [
+                'id' => $message['id'],
+                'uid' => $message['uid'],
+                'nickname' => $message['nickname'],
+                'display_name' => $message['display_name'],
+                'content' => json_decode($message['content'], true)['content'],
+            ];
+        }, $messages);
+
+        // Filter out already processed messages
+        $newMessages = array_filter($extractedData, function ($message) use ($processedMessages) {
+            return !in_array($message['content'], $processedMessages);
+        });
+
+        foreach ($newMessages as $message) {
+            $user = $message['uid'];
+            if ($sellerId === $user) {
+                // Continue to the next iteration if the user is the seller
+                continue;
+            }
+
+            // Print extracted data for new messages
+            if (!empty($newMessages)) {
+                $date = date('d/m H:i:s', $timestamp);
+                echo "===| NEW MESSAGE |===\n";
+                echo "TIME: " . $date . "\n";
+                echo "UID: " . $message['uid'] . "\n";
+                echo "NAMA: " . $message['display_name'] . "\n";
+                echo "MESSAGE: " . $message['content'] . "\n";
+                echo "STATUS: ";
+
+                // Add the processed message to the array
+                $processedMessages[] = $message['content'];
+
+                // Check for banned words
+                if (containsBannedWords($message['content'])) {
+                    echo 'DITEMUKAN KATA-KATA YANG DIFILTER!!' . PHP_EOL;
+
+                    if (!in_array($message['uid'], $bannedUsers)) {
+                        banUser($message['uid']);
+                        $bannedUsers[] = $message['uid'];
+                    } else {
+                        echo 'USER SUDAH DIBANNED CHAT!! SKIP!!' . PHP_EOL . PHP_EOL;
+                    }
+                } else {
+                    echo 'TIDAK DITEMUKAN KATA-KATA YANG DIFILTER!!' . PHP_EOL . PHP_EOL;
+                }
+            }
+        }
     }
 }
 
