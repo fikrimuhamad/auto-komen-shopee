@@ -8,7 +8,9 @@ echo "----------- [ MENU ] -----------\n";
 echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN\n\n";
 echo "1. BOT AUTO KOMEN + AUTO GET USERSIG + AUTO BANNED FILTER KATA-KATA\n";
 echo "2. GET KOMEN + AUTO BANNED FILTER KATA-KATA\n";
-echo "3. RANDOM PIN PRODUK SETIAP 1 MENIT\n";
+echo "3. BALES KOMENTAR\n";
+echo "4. PIN KOMENTAR\n";
+echo "5. RANDOM PIN PRODUK SETIAP 1 MENIT\n";
 
 $menuSelect =  input("TENTUKAN PILIHAN ANDA ??\n");
 if ($menuSelect == 1) {
@@ -100,6 +102,57 @@ if ($menuSelect == 1) {
         }
     }
 } elseif ($menuSelect == 3) {
+    // Fungsi untuk membaca cookies dari file
+    $cookiesFilePath = 'cookie.txt';
+    $cookies = readCookiesFromFile($cookiesFilePath);
+    if (!$cookies) {
+        error_log('Cookies not available. Please check your cookies.txt file.');
+        exit(1);
+    }
+    getData();
+    getSessionId();
+
+    // PERULANGAN UNTUK MENGIRIM PESAN LAGI
+    while (true) {
+        KomenLagi:
+        $katakataSHOPEE = input("TEXT KOMENTAR");
+
+        // Memastikan panjang string tidak melebihi 150 karakter
+        $katakataSHOPEE = substr($katakataSHOPEE, 0, 150);
+
+        // Pemeriksaan panjang string
+        if (str_word_count($katakataSHOPEE) > 150) {
+            echo 'PESAN TIDAK BOLEH LEBIH DARI 150 KATA';
+            goto KomenLagi;
+        } else {
+            komenLive($katakataSHOPEE);
+            goto KomenLagi;
+        }
+    }
+} elseif ($menuSelect == 4) {
+    // Fungsi untuk membaca cookies dari file
+    $cookiesFilePath = 'cookie.txt';
+    $cookies = readCookiesFromFile($cookiesFilePath);
+    if (!$cookies) {
+        error_log('Cookies not available. Please check your cookies.txt file.');
+        exit(1);
+    }
+    getData();
+    getSessionId();
+
+    // PERULANGAN UNTUK MENGIRIM PESAN LAGI
+    $katakataSHOPEE = input("TEXT PIN KOMENTAR");
+
+    // Memastikan panjang string tidak melebihi 150 karakter
+    $katakataSHOPEE = substr($katakataSHOPEE, 0, 150);
+
+    // Pemeriksaan panjang string
+    if (str_word_count($katakataSHOPEE) > 150) {
+        echo 'PESAN TIDAK BOLEH LEBIH DARI 150 KATA';
+    } else {
+        pinkomenLive($katakataSHOPEE) . PHP_EOL;
+    }
+} elseif ($menuSelect == 5) {
     // Fungsi untuk membaca cookies dari file
     $cookiesFilePath = 'cookie.txt';
     $cookies = readCookiesFromFile($cookiesFilePath);
@@ -298,6 +351,60 @@ function komenLive($message)
         'usersig' => $usersig,
         'content' => '{"type":101,"content":"' . $message . '"}',
         'pin' => false,
+    ];
+
+    $options = [
+        'http' => [
+            'header' => [
+                'Cookie: ' . $cookies,
+                'Content-Type: application/json',
+                'referer: https://live.shopee.co.id/pc/live?session=' . $sessionId,
+            ],
+            'method' => 'POST',
+            'content' => json_encode($postData),
+        ],
+    ];
+
+    $context = stream_context_create($options);
+
+    $responseKomen = file_get_contents($komenUrl, false, $context);
+
+    if ($responseKomen === FALSE) {
+        echo 'Error fetching data.';
+    } else {
+        // Parse JSON response
+        $responseData = json_decode($responseKomen, true);
+
+        // Check if err_msg exists
+        if (isset($responseData['err_msg'])) {
+            $errMsg = $responseData['err_msg'];
+
+            // Add your custom handling for err_msg
+            if ($errMsg === 'YourCustomErrorMessage') {
+                echo 'Custom Error Handling: ' . $errMsg . PHP_EOL;
+            } else {
+                echo 'STATUS PESAN BOT: ' . strtoupper($errMsg);
+            }
+        }
+
+        // Check if data.message_id exists
+        if (isset($responseData['data']['message_id'])) {
+            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . "MESSAGE BOT: $message" . PHP_EOL . PHP_EOL;
+        }
+    }
+}
+
+function pinkomenLive($message)
+{
+    global $sessionId, $cookies, $deviceId, $responseKomen, $usersig;
+
+    $komenUrl = 'https://live.shopee.co.id/webapi/v1/session/' . $sessionId . '/message';
+
+    $postData = [
+        'uuid' => $deviceId,
+        'usersig' => $usersig,
+        'content' => '{"type":101,"content":"' . $message . '"}',
+        'pin' => true,
     ];
 
     $options = [
@@ -641,7 +748,7 @@ function showItem()
             $statusPinProduk = $sessionIdData['err_msg'];
             echo "SET PIN ETALASE NO " . $acakNomorProduk + 1 . "\n$produkItem\n";
             echo "STATUS PIN PRODUK: ";
-            sleep(60);
+            sleep(120);
             echo strtoupper($statusPinProduk) . " MENAMPILKAN ETALASE NO " . $acakNomorProduk + 1 . "!!\n\n";
 
             // Return the session ID for further use
