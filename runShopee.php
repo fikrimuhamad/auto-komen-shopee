@@ -437,13 +437,13 @@ function pinkomenLive($message)
             if ($errMsg === 'YourCustomErrorMessage') {
                 echo 'Custom Error Handling: ' . $errMsg . PHP_EOL;
             } else {
-                echo 'STATUS PESAN BOT: ' . strtoupper($errMsg);
+                echo 'STATUS PIN KOMENTAR: ' . strtoupper($errMsg);
             }
         }
 
         // Check if data.message_id exists
         if (isset($responseData['data']['message_id'])) {
-            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . "MESSAGE BOT: $message" . PHP_EOL . PHP_EOL;
+            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . "MESSAGE PIN KOMENTAR: $message" . PHP_EOL . PHP_EOL;
         }
     }
 }
