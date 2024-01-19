@@ -5,4 +5,4 @@
 JANGAN LUPA MASUKKAN SESSIONID LIVENYA, SOALNYA UNTUK AMBIL DATA BOT KOMEN!!<br>
 cara run: <b>php runShopee.php</b><br><br>
 
-![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/207a6217-8fbf-4bf1-b1cb-02660edd6371)
+![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/08e40483-d627-45b5-ab98-18f3abe928fd)
