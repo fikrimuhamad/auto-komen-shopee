@@ -1,5 +1,12 @@
 <?php
 date_default_timezone_set('Asia/Jakarta');
+// Fungsi untuk mengambil data cookies dari file
+$cookiesFilePath = 'cookie.txt';
+$cookies = readCookiesFromFile($cookiesFilePath);
+if (!$cookies) {
+    error_log('Cookies not available. Please check your cookies.txt file.');
+    exit(1);
+}
 echo PHP_EOL . "--------| INFO DATA LIVE |--------" . PHP_EOL . PHP_EOL;
 // UNTUK GET DATA LIVE
 DataLive();
@@ -25,16 +32,8 @@ if ($menuSelect == 1) {
     echo PHP_EOL . "\nPESAN :" . PHP_EOL;
     echo "EDIT KATA-KATA DIATAS PADA FILE keyword.php" . PHP_EOL;
 
-    $cookiesFilePath = 'cookie.txt';
     $banwordFilePath = 'bannedText.txt';
-
-    $cookies = readCookiesFromFile($cookiesFilePath);
     $bannedWords = readBannedWordsFromFile($banwordFilePath);
-
-    if (!$cookies) {
-        error_log('Cookies not available. Please check your cookies.txt file.');
-        exit(1);
-    }
 
     $sessionId = null;
     $chatroomId = null;
@@ -61,18 +60,8 @@ if ($menuSelect == 1) {
         }
     }
 } elseif ($menuSelect == 2) {
-    $cookiesFilePath = 'cookie.txt';
     $banwordFilePath = 'bannedText.txt';
-
-
-    $cookies = readCookiesFromFile($cookiesFilePath);
     $bannedWords = readBannedWordsFromFile($banwordFilePath);
-
-    if (!$cookies) {
-        error_log('Cookies not available. Please check your cookies.txt file.');
-        exit(1);
-    }
-
 
     $sessionId = null;
     $chatroomId = null;
@@ -103,13 +92,6 @@ if ($menuSelect == 1) {
         }
     }
 } elseif ($menuSelect == 3) {
-    // Fungsi untuk membaca cookies dari file
-    $cookiesFilePath = 'cookie.txt';
-    $cookies = readCookiesFromFile($cookiesFilePath);
-    if (!$cookies) {
-        error_log('Cookies not available. Please check your cookies.txt file.');
-        exit(1);
-    }
     getData();
     getSessionId();
     echo 'ATUR PIN PRODUK SESUAI PILIHANMU' . PHP_EOL;
@@ -182,6 +164,8 @@ if ($menuSelect == 1) {
     } else {
         pinkomenLive($katakataSHOPEE) . PHP_EOL;
     }
+    // } elseif ($menuSelect == 6) {
+
 } else {
     echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!" . PHP_EOL;
     goto inputLagi;
@@ -257,35 +241,16 @@ function getData()
     }
 }
 
-function DataLive()
-{
-    global $dataLive, $sessionLive, $Title, $Live, $statusLive, $tanggalMulai, $jamMulai;
-    $dataLive = LiveData();
-    $sessionLive = $dataLive['sessionId'];
-    $Title = $dataLive['title'];
-    $Live = $dataLive['status'];
-    if ($Live == '1') {
-        $statusLive = 'RUNNING';
-    } else {
-        $statusLive = 'STOP';
-    }
-
-    echo "SESSION ID: $sessionLive\nLIVE TITLE: $Title\nSTATUS LIVE: $statusLive" . PHP_EOL . PHP_EOL;
-}
-
-
-// print_r(fetchData());
-
 function LiveData()
 {
-    $cookie = file_get_contents("./cookie.txt");
+    global $cookies;
     $urlData = 'https://creator.shopee.co.id/supply/api/lm/sellercenter/realtime/sessionList?page=1&pageSize=10&name=';
     $headers = [
         'authority' => 'creator.shopee.co.id',
         'accept' => 'application/json',
         'accept-language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
         'content-type' => 'application/json',
-        'cookie' => $cookie,
+        'cookie' => $cookies,
         'language' => 'en',
         'sec-ch-ua' => '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
         'sec-ch-ua-mobile' => '?0',
@@ -318,6 +283,28 @@ function LiveData()
     } catch (Exception $error) {
         echo $error;
     }
+}
+
+function DataLive()
+{
+    global $dataLive, $sessionLive, $timestamp, $Title, $Live, $statusLive, $tanggalMulai, $jamMulai;
+    $dataLive = LiveData();
+    $sessionLive = $dataLive['sessionId'];
+    $timestamp = $dataLive['startTime'];
+    $Title = $dataLive['title'];
+    $Live = $dataLive['status'];
+    $timestamp_in_seconds = $timestamp / 1000;
+
+    $tanggalMulai = strtoupper(date('d/M', $timestamp_in_seconds));
+    $jamMulai = strtoupper(date('g:i a', $timestamp_in_seconds));
+
+    if ($Live == '1') {
+        $statusLive = 'RUNNING';
+    } else {
+        $statusLive = 'STOP';
+    }
+
+    echo "SESSION ID: $sessionLive\nLIVE TITLE: $Title\nLIVE TANGGAL: $tanggalMulai $jamMulai\nSTATUS LIVE: $statusLive" . PHP_EOL . PHP_EOL;
 }
 
 //get data live
