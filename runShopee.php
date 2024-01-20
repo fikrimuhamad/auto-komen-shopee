@@ -1,28 +1,29 @@
 <?php
 date_default_timezone_set('Asia/Jakarta');
-echo "----------- [ MASUKKAN SESSIONID LIVE ] -----------\n";
-$sessionLive =  input("");
+echo PHP_EOL . "--------| INFO DATA LIVE |--------" . PHP_EOL . PHP_EOL;
+// UNTUK GET DATA LIVE
+DataLive();
 
 inputLagi:
-echo "----------- [ MENU ] -----------\n";
-echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN\n\n";
-echo "1. BOT AUTO KOMEN + AUTO GET USERSIG + AUTO BANNED FILTER KATA-KATA\n";
-echo "2. GET KOMEN + AUTO BANNED FILTER KATA-KATA\n";
-echo "3. BALES KOMENTAR\n";
-echo "4. PIN KOMENTAR\n";
-echo "5. RANDOM PIN PRODUK SETIAP 1 MENIT\n";
+echo "----------- [ MENU ] -----------" . PHP_EOL;
+echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN" . PHP_EOL . PHP_EOL;
+echo "1. BOT AUTO KOMEN + AUTO GET USERSIG + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
+echo "2. GET KOMEN + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
+echo "3. BALES KOMENTAR" . PHP_EOL;
+echo "4. PIN KOMENTAR" . PHP_EOL;
+echo "5. RANDOM PIN PRODUK SETIAP 1 MENIT" . PHP_EOL;
 
-$menuSelect =  input("TENTUKAN PILIHAN ANDA ??\n");
+$menuSelect =  input("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
 if ($menuSelect == 1) {
-    echo "\nKATA-KATA PADA FILE KEYWORD YANG TERSEDIA\n";
+    echo PHP_EOL . "KATA-KATA PADA FILE KEYWORD YANG TERSEDIA" . PHP_EOL;
     $keywordData = include "keyword.php";
 
     // Menampilkan semua data pada $keywordData
     foreach ($keywordData as $keyword => $response) {
-        echo "Keyword: $keyword, Response: $response\n";
+        echo "Keyword: $keyword, Response: $response" . PHP_EOL;
     }
-    echo "\n\nPESAN :\n";
-    echo "EDIT KATA-KATA DIATAS PADA FILE keyword.php\n";
+    echo PHP_EOL . "\nPESAN :" . PHP_EOL;
+    echo "EDIT KATA-KATA DIATAS PADA FILE keyword.php" . PHP_EOL;
 
     $cookiesFilePath = 'cookie.txt';
     $banwordFilePath = 'bannedText.txt';
@@ -167,7 +168,7 @@ if ($menuSelect == 1) {
         showItem();
     }
 } else {
-    echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!\n";
+    echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!" . PHP_EOL;
     goto inputLagi;
 }
 
@@ -193,7 +194,7 @@ function readBannedWordsFromFile($filePath)
 {
     try {
         $bannedWords = file_get_contents($filePath);
-        $bannedWords = explode("\n", $bannedWords);
+        $bannedWords = explode(PHP_EOL . "", $bannedWords);
         // Menghapus string kosong atau yang hanya terdiri dari spasi dari $bannedWords
         $bannedWords = array_filter($bannedWords, function ($word) {
             return trim($word) !== '';
@@ -241,6 +242,75 @@ function getData()
     }
 }
 
+function DataLive()
+{
+    global $dataLive, $sessionLive, $timestamp, $Title, $Live, $statusLive, $tanggalMulai, $jamMulai;
+    $dataLive = LiveData();
+    $sessionLive = $dataLive['sessionId'];
+    $timestamp = $dataLive['startTime'];
+    $Title = $dataLive['title'];
+    $Live = $dataLive['status'];
+    $timestamp_in_seconds = $timestamp / 1000;
+
+    $tanggalMulai = strtoupper(date('d/M', $timestamp_in_seconds));
+    $jamMulai = strtoupper(date('g:i a', $timestamp_in_seconds));
+
+    if ($Live == '1') {
+        $statusLive = 'RUNNING';
+    } else {
+        $statusLive = 'STOP';
+    }
+
+    echo "SESSION ID: $sessionLive\nLIVE TITLE: $Title\nLIVE TANGGAL: $tanggalMulai $jamMulai\nSTATUS LIVE: $statusLive" . PHP_EOL . PHP_EOL;
+}
+
+
+// print_r(fetchData());
+
+function LiveData()
+{
+    $cookie = file_get_contents("./cookie.txt");
+    $urlData = 'https://creator.shopee.co.id/supply/api/lm/sellercenter/realtime/sessionList?page=1&pageSize=10&name=';
+    $headers = [
+        'authority' => 'creator.shopee.co.id',
+        'accept' => 'application/json',
+        'accept-language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+        'content-type' => 'application/json',
+        'cookie' => $cookie,
+        'language' => 'en',
+        'sec-ch-ua' => '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+        'sec-ch-ua-mobile' => '?0',
+        'sec-ch-ua-platform' => '"Windows"',
+        'sec-fetch-dest' => 'empty',
+        'sec-fetch-mode' => 'cors',
+        'sec-fetch-site' => 'same-origin',
+        'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'x-env' => 'live',
+        'x-region' => 'id',
+        'x-region-domain' => 'co.id',
+        'x-region-timezone' => '+0700',
+    ];
+
+    $options = [
+        'http' => [
+            'header' => implode("\r" . PHP_EOL, array_map(function ($key, $value) {
+                return "$key: $value";
+            }, array_keys($headers), $headers)),
+        ],
+    ];
+
+    $context = stream_context_create($options);
+
+    try {
+        $response = file_get_contents($urlData, false, $context);
+        $data = json_decode($response, true);
+        $infoLive = $data['data']['list'][0];
+        return $infoLive;
+    } catch (Exception $error) {
+        echo $error;
+    }
+}
+
 //get data live
 function getSessionId()
 {
@@ -264,7 +334,6 @@ function getSessionId()
 
     if ($sessionIdData) {
         if ($sessionIdData['err_code'] === 0 && $sessionIdData['data'] && $sessionIdData['data']['session']) {
-            $titleLIVE = $sessionIdData['data']['session']['title'];
             $sellerId = $sessionIdData['data']['session']['uid'];
             $usernameId = $sessionIdData['data']['session']['username'];
             $sessionId = $sessionIdData['data']['session']['session_id'];
@@ -272,15 +341,10 @@ function getSessionId()
             $deviceId = $sessionIdData['data']['session']['device_id'];
             $usersig = $sessionIdData['data']['usersig'];
 
-            echo PHP_EOL . '===| SESSION INFO |===' . PHP_EOL;
-            echo 'TITLE LIVE: ' . $titleLIVE . PHP_EOL;
-            echo 'SELLER NAME: ' . $usernameId . PHP_EOL;
-            echo 'SELLER ID: ' . $sellerId . PHP_EOL;
-
             echo PHP_EOL . '===| LIVE INFO |===' . PHP_EOL;
+            echo 'USERNAME LIVE: ' . $usernameId . PHP_EOL;
             echo 'UUID / DEVICEID LIVE: ' . $deviceId . PHP_EOL;
             echo 'CHATROOM LIVE: ' . $chatroomId . PHP_EOL;
-            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
             echo 'USERSIG LIVE: ' . $usersig . PHP_EOL . PHP_EOL;
 
             getData();
@@ -507,11 +571,11 @@ function checkMessage()
         // Print extracted data for new messages
         if (!empty($newMessages)) {
             $date = date('d/m H:i:s', $timestamp);
-            echo "===| NEW MESSAGE |===\n";
-            echo "TIME: " . $date . "\n";
-            echo "UID: " . $message['uid'] . "\n";
-            echo "NAMA: " . $message['display_name'] . " ( " . $message['nickname'] . " )\n";
-            echo "MESSAGE: " . $message['content'] . "\n";
+            echo "===| NEW MESSAGE |===" . PHP_EOL;
+            echo "TIME: " . $date . PHP_EOL . "";
+            echo "UID: " . $message['uid'] . PHP_EOL . "";
+            echo "NAMA: " . $message['display_name'] . " ( " . $message['nickname'] . " )" . PHP_EOL;
+            echo "MESSAGE: " . $message['content'] . PHP_EOL . "";
             echo "STATUS: ";
 
 
@@ -636,11 +700,11 @@ function GetMessage()
             // Print extracted data for new messages
             if (!empty($newMessages)) {
                 $date = date('d/m H:i:s', $timestamp);
-                echo "===| NEW MESSAGE |===\n";
-                echo "TIME: " . $date . "\n";
-                echo "UID: " . $message['uid'] . "\n";
-                echo "NAMA: " . $message['display_name'] . "\n";
-                echo "MESSAGE: " . $message['content'] . "\n";
+                echo "===| NEW MESSAGE |===" . PHP_EOL;
+                echo "TIME: " . $date . PHP_EOL . "";
+                echo "UID: " . $message['uid'] . PHP_EOL . "";
+                echo "NAMA: " . $message['display_name'] . PHP_EOL . "";
+                echo "MESSAGE: " . $message['content'] . PHP_EOL . "";
                 echo "STATUS: ";
 
                 // Add the processed message to the array
@@ -695,7 +759,7 @@ function getItemData()
 
             // Get random item data
             $NoProduk = $sessionData['data']['items'][$acakNomorProduk];
-            $produkItem = "ID: " . $NoProduk['item_id'] . "\nNAMA: " . $NoProduk['name'];
+            $produkItem = "ID: " . $NoProduk['item_id'] . PHP_EOL . "NAMA: " . $NoProduk['name'];
 
             // Modify the response data to include only the random item
             $sessionData = $NoProduk;
@@ -728,7 +792,7 @@ function showItem()
 
     $options = array(
         'http' => array(
-            'header'  => "Content-type: application/json\r\n" .
+            'header'  => "Content-type: application/json\r" . PHP_EOL .
                 'Cookie: ' . $cookies,
             'method'  => 'POST',
             'content' => json_encode($data), // Ubah 'content' menjadi json_encode($data)
@@ -746,10 +810,10 @@ function showItem()
 
         if ($sessionIdData['err_code'] === 0) {
             $statusPinProduk = $sessionIdData['err_msg'];
-            echo "SET PIN ETALASE NO " . $acakNomorProduk + 1 . "\n$produkItem\n";
+            echo "SET PIN ETALASE NO " . $acakNomorProduk + 1 . PHP_EOL . "$produkItem" . PHP_EOL;
             echo "STATUS PIN PRODUK: ";
             sleep(120);
-            echo strtoupper($statusPinProduk) . " MENAMPILKAN ETALASE NO " . $acakNomorProduk + 1 . "!!\n\n";
+            echo strtoupper($statusPinProduk) . " MENAMPILKAN ETALASE NO " . $acakNomorProduk + 1 . "!!" . PHP_EOL . PHP_EOL;
 
             // Return the session ID for further use
         } else {
