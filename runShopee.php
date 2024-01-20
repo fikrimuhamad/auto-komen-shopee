@@ -163,9 +163,24 @@ if ($menuSelect == 1) {
     }
     getData();
     getSessionId();
-
-    while (true) {
-        showItem();
+    echo 'ATUR PIN PRODUK SESUAI PILIHANMU' . PHP_EOL;
+    echo '1. SETIAP 1MENIT' . PHP_EOL;
+    echo '2. ATUR WAKTU SENDIRI' . PHP_EOL;
+    $menuSelect =  input("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
+    if ($menuSelect == 1) {
+        while (true) {
+            showItem();
+            sleep(65);
+        }
+    } elseif ($menuSelect == 2) {
+        $jedaPin =  input("MASUKKAN DELAY PIN PRODUK |DETIK *(1-10000)" . PHP_EOL);
+        while (true) {
+            showItem();
+            sleep($jedaPin);
+        }
+    } else {
+        echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!" . PHP_EOL;
+        goto inputLagi;
     }
 } else {
     echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!" . PHP_EOL;
@@ -812,7 +827,6 @@ function showItem()
             $statusPinProduk = $sessionIdData['err_msg'];
             echo "SET PIN ETALASE NO " . $acakNomorProduk + 1 . PHP_EOL . "$produkItem" . PHP_EOL;
             echo "STATUS PIN PRODUK: ";
-            sleep(120);
             echo strtoupper($statusPinProduk) . " MENAMPILKAN ETALASE NO " . $acakNomorProduk + 1 . "!!" . PHP_EOL . PHP_EOL;
 
             // Return the session ID for further use
