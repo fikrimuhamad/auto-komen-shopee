@@ -259,17 +259,11 @@ function getData()
 
 function DataLive()
 {
-    global $dataLive, $sessionLive, $timestamp, $Title, $Live, $statusLive, $tanggalMulai, $jamMulai;
+    global $dataLive, $sessionLive, $Title, $Live, $statusLive, $tanggalMulai, $jamMulai;
     $dataLive = LiveData();
     $sessionLive = $dataLive['sessionId'];
-    $timestamp = $dataLive['startTime'];
     $Title = $dataLive['title'];
     $Live = $dataLive['status'];
-    $timestamp_in_seconds = $timestamp / 1000;
-
-    $tanggalMulai = strtoupper(date('d/M', $timestamp_in_seconds));
-    $jamMulai = strtoupper(date('g:i a', $timestamp_in_seconds));
-
     if ($Live == '1') {
         $statusLive = 'RUNNING';
     } else {
