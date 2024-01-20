@@ -9,9 +9,9 @@ echo "----------- [ MENU ] -----------" . PHP_EOL;
 echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN" . PHP_EOL . PHP_EOL;
 echo "1. BOT AUTO KOMEN + AUTO GET USERSIG + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
 echo "2. GET KOMEN + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
-echo "3. BALES KOMENTAR" . PHP_EOL;
-echo "4. PIN KOMENTAR" . PHP_EOL;
-echo "5. RANDOM PIN PRODUK SETIAP 1 MENIT" . PHP_EOL;
+echo "3. RANDOM PIN PRODUK *SETIAP 1MENIT / ATUR JEDA SENDIRI" . PHP_EOL;
+echo "4. BALES KOMENTAR" . PHP_EOL;
+echo "5. PIN KOMENTAR" . PHP_EOL;
 
 $menuSelect =  input("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
 if ($menuSelect == 1) {
@@ -112,7 +112,36 @@ if ($menuSelect == 1) {
     }
     getData();
     getSessionId();
-
+    echo 'ATUR PIN PRODUK SESUAI PILIHANMU' . PHP_EOL;
+    echo '1. SETIAP 60 DETIK' . PHP_EOL;
+    echo '2. ATUR WAKTU SENDIRI' . PHP_EOL;
+    $menuSelect =  input("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
+    if ($menuSelect == 1) {
+        echo PHP_EOL . 'AUTO PIN PRODUK SETIAP 60 DETIK' . PHP_EOL;
+        $jedaPin = 61;
+        while (true) {
+            showItem();
+        }
+    } elseif ($menuSelect == 2) {
+        $jedaPin =  input("MASUKKAN DELAY PIN PRODUK |DETIK *(1-10000)" . PHP_EOL);
+        echo PHP_EOL . 'AUTO PIN PRODUK SETIAP ' . $jedaPin . ' DETIK' . PHP_EOL;
+        while (true) {
+            showItem();
+        }
+    } else {
+        echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!" . PHP_EOL;
+        goto inputLagi;
+    }
+} elseif ($menuSelect == 4) {
+    // Fungsi untuk membaca cookies dari file
+    $cookiesFilePath = 'cookie.txt';
+    $cookies = readCookiesFromFile($cookiesFilePath);
+    if (!$cookies) {
+        error_log('Cookies not available. Please check your cookies.txt file.');
+        exit(1);
+    }
+    getData();
+    getSessionId();
     // PERULANGAN UNTUK MENGIRIM PESAN LAGI
     while (true) {
         KomenLagi:
@@ -130,7 +159,7 @@ if ($menuSelect == 1) {
             goto KomenLagi;
         }
     }
-} elseif ($menuSelect == 4) {
+} elseif ($menuSelect == 5) {
     // Fungsi untuk membaca cookies dari file
     $cookiesFilePath = 'cookie.txt';
     $cookies = readCookiesFromFile($cookiesFilePath);
@@ -152,35 +181,6 @@ if ($menuSelect == 1) {
         echo 'PESAN TIDAK BOLEH LEBIH DARI 150 KATA';
     } else {
         pinkomenLive($katakataSHOPEE) . PHP_EOL;
-    }
-} elseif ($menuSelect == 5) {
-    // Fungsi untuk membaca cookies dari file
-    $cookiesFilePath = 'cookie.txt';
-    $cookies = readCookiesFromFile($cookiesFilePath);
-    if (!$cookies) {
-        error_log('Cookies not available. Please check your cookies.txt file.');
-        exit(1);
-    }
-    getData();
-    getSessionId();
-    echo 'ATUR PIN PRODUK SESUAI PILIHANMU' . PHP_EOL;
-    echo '1. SETIAP 1MENIT' . PHP_EOL;
-    echo '2. ATUR WAKTU SENDIRI' . PHP_EOL;
-    $menuSelect =  input("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
-    if ($menuSelect == 1) {
-        while (true) {
-            showItem();
-            sleep(65);
-        }
-    } elseif ($menuSelect == 2) {
-        $jedaPin =  input("MASUKKAN DELAY PIN PRODUK |DETIK *(1-10000)" . PHP_EOL);
-        while (true) {
-            showItem();
-            sleep($jedaPin);
-        }
-    } else {
-        echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!" . PHP_EOL;
-        goto inputLagi;
     }
 } else {
     echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!" . PHP_EOL;
@@ -796,7 +796,7 @@ function getItemData()
 
 function showItem()
 {
-    global $cookies, $sessionId, $DataItem, $acakNomorProduk, $produkItem, $totalProduk, $jedaSleep;
+    global $cookies, $sessionId, $DataItem, $acakNomorProduk, $produkItem, $jedaPin;
     // Panggil fungsi getItemData() terlebih dahulu
 
     $sessionIdData = "https://live.shopee.co.id/webapi/v1/session/$sessionId/show";
@@ -827,6 +827,7 @@ function showItem()
             $statusPinProduk = $sessionIdData['err_msg'];
             echo "SET PIN ETALASE NO " . $acakNomorProduk + 1 . PHP_EOL . "$produkItem" . PHP_EOL;
             echo "STATUS PIN PRODUK: ";
+            sleep($jedaPin);
             echo strtoupper($statusPinProduk) . " MENAMPILKAN ETALASE NO " . $acakNomorProduk + 1 . "!!" . PHP_EOL . PHP_EOL;
 
             // Return the session ID for further use
