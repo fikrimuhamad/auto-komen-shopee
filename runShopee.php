@@ -276,7 +276,7 @@ function DataLive()
         $statusLive = 'STOP';
     }
 
-    echo "SESSION ID: $sessionLive\nLIVE TITLE: $Title\nLIVE TANGGAL: $tanggalMulai $jamMulai\nSTATUS LIVE: $statusLive" . PHP_EOL . PHP_EOL;
+    echo "SESSION ID: $sessionLive\nLIVE TITLE: $Title\nSTATUS LIVE: $statusLive" . PHP_EOL . PHP_EOL;
 }
 
 
