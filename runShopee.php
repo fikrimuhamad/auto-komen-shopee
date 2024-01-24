@@ -2,7 +2,7 @@
 date_default_timezone_set('Asia/Jakarta');
 
 // JANGAN DIUBAH YANG INI
-$cookiesFilePath = 'cookie.txt';
+$cookiesFilePath = 'cookies11.txt';
 $cookies = readCookiesFromFile($cookiesFilePath);
 
 if (!$cookies) {
@@ -37,7 +37,8 @@ echo "1. AUTO KOMENTAR + AUTO GET USERSIG + AUTO BANNED FILTER KATA-KATA" . PHP_
 echo "2. GET KOMENTAR + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
 echo "3. AUTO PIN PRODUK / *SOON AUTO PIN BY REQUEST" . PHP_EOL;
 echo "4. BALES KOMENTAR / PIN KOMENTAR" . PHP_EOL;
-echo "5. AUTO KOMENTAR" . PHP_EOL . PHP_EOL;
+echo "5. AUTO SHOW VOUCHER SEIAP 1 MENIT" . PHP_EOL;
+echo "6. AUTO KOMENTAR" . PHP_EOL . PHP_EOL;
 
 $menuSelect =  input("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
 
@@ -151,6 +152,16 @@ if ($menuSelect == 1) {
         }
     } while ($komenMenu == "1" || $komenMenu == "2");
 } elseif ($menuSelect == 5) {
+
+    getData();
+    getSessionId();
+    echo PHP_EOL . 'AUTO SHOW VOUCHER SETIAP 1 MENIT' . PHP_EOL;
+    while (true) {
+        sleep(40); //jika ingin diubah ditambah 30, cntoh disamping 40. jika kamu jalankan dia akan delay hampir 1.menit 10detik karena ada delay tambahan dari loading api websitenya
+        showVoc();
+        echo 'JEDA... SHOW VOUCHER LAGI SETELAH 1MENIT' . PHP_EOL;
+    }
+} elseif ($menuSelect == 6) {
 
     getData();
     getSessionId();
@@ -343,7 +354,7 @@ function getSessionId()
             $usernameId = $sessionIdData['data']['session']['username'];
             $chatroomId = $sessionIdData['data']['session']['chatroom_id'];
             $usersig = $sessionIdData['data']['usersig'];
-            echo PHP_EOL.'------|[ SESSION DATA LIVE ]|------' . PHP_EOL;
+            echo PHP_EOL . '------|[ SESSION DATA LIVE ]|------' . PHP_EOL;
             echo 'USERNAME: ' . $usernameId . PHP_EOL;
             echo 'SELLER ID: ' . $sellerId . PHP_EOL;
             echo 'DEVICEID LIVE: ' . $deviceId . PHP_EOL;
@@ -564,6 +575,20 @@ function pinkomenLive($message)
             echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . "MESSAGE BOT: $message" . PHP_EOL . PHP_EOL;
         }
     }
+}
+
+function showVoc()
+{
+    global $cookies, $sessionId;
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/api.php?key=SGB10!&sessionid=' . $sessionId . '&cookies=' . urlencode($cookies));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+    curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+
+    $result = curl_exec($ch);
+    curl_close($ch);
+    echo $result;
 }
 
 //auto komen + ban filter kata-kata
