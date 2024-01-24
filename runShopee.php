@@ -2,7 +2,7 @@
 date_default_timezone_set('Asia/Jakarta');
 
 // JANGAN DIUBAH YANG INI
-$cookiesFilePath = 'cookies11.txt';
+$cookiesFilePath = 'cookie.txt';
 $cookies = readCookiesFromFile($cookiesFilePath);
 
 if (!$cookies) {
@@ -25,24 +25,28 @@ $deviceId = null;
 $bannedUsers = [];
 $processedMessages = [];
 $lastBotMessageID = [];
-
-echo PHP_EOL . "--------|[ INFO DATA LIVE ]|--------" . PHP_EOL;
+echo "SEDANG MENGAMBIL DATA LIVE..." . PHP_EOL;
 // INI JUGA
-DataLive();
+getData();
 
 inputLagi:
 echo "-----------|[ MENU ]|-----------" . PHP_EOL;
 echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN" . PHP_EOL . PHP_EOL;
-echo "1. AUTO KOMENTAR + AUTO GET USERSIG + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
-echo "2. GET KOMENTAR + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
-echo "3. AUTO PIN PRODUK RANDOM" . PHP_EOL;
-echo "4. BALES KOMENTAR / PIN KOMENTAR" . PHP_EOL;
-echo "5. AUTO SHOW VOUCHER SEIAP 1 MENIT" . PHP_EOL;
-echo "6. AUTO KOMENTAR" . PHP_EOL . PHP_EOL;
+echo "1. GET INFO DATA RTMP LIVE" . PHP_EOL;
+echo "2. AUTO KOMENTAR + AUTO GET USERSIG + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
+echo "3. GET KOMENTAR + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
+echo "4. AUTO PIN PRODUK / *SOON AUTO PIN BY REQUEST" . PHP_EOL;
+echo "5. BALES KOMENTAR / PIN KOMENTAR" . PHP_EOL;
+echo "6. AUTO SHOW VOUCHER SEIAP 1 MENIT" . PHP_EOL;
+echo "7. AUTO KOMENTAR" . PHP_EOL;
+echo "8. END LIVE" . PHP_EOL . PHP_EOL;
 
 $menuSelect =  input("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
 
 if ($menuSelect == 1) {
+
+    getRTMP();
+} elseif ($menuSelect == 2) {
     echo PHP_EOL . "KATA-KATA PADA FILE KEYWORD YANG TERSEDIA" . PHP_EOL;
     $keywordData = include "keyword.php";
 
@@ -66,7 +70,7 @@ if ($menuSelect == 1) {
             sleep(3);
         }
     }
-} elseif ($menuSelect == 2) {
+} elseif ($menuSelect == 3) {
 
     while (true) {
         $startTime = microtime(true); // Waktu awal eksekusi
@@ -82,7 +86,7 @@ if ($menuSelect == 1) {
             sleep(3);
         }
     }
-} elseif ($menuSelect == 3) {
+} elseif ($menuSelect == 4) {
 
     echo 'ATUR PIN PRODUK SESUAI PILIHANMU' . PHP_EOL;
     echo '1. SETIAP 60 DETIK' . PHP_EOL;
@@ -107,7 +111,7 @@ if ($menuSelect == 1) {
         echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!" . PHP_EOL;
         goto inputLagi;
     }
-} elseif ($menuSelect == 4) {
+} elseif ($menuSelect == 5) {
 
     menuKomen:
     do {
@@ -139,6 +143,9 @@ if ($menuSelect == 1) {
                 do {
                     if ($pilihan == "y" || $pilihan == "Y") {
                         goto pinLagi;
+                    } else {
+                        // menjalankan kembali sc Shopee
+                        exec('start cmd /k php ShopeeRun.php');
                     }
                 } while ($pilihan == "y" || $pilihan == "Y");
             }
@@ -148,20 +155,16 @@ if ($menuSelect == 1) {
             goto menuKomen;
         }
     } while ($komenMenu == "1" || $komenMenu == "2");
-} elseif ($menuSelect == 5) {
+} elseif ($menuSelect == 6) {
 
-    getData();
-    getSessionId();
     echo PHP_EOL . 'AUTO SHOW VOUCHER SETIAP 1 MENIT' . PHP_EOL;
     while (true) {
         sleep(40); //jika ingin diubah ditambah 30, cntoh disamping 40. jika kamu jalankan dia akan delay hampir 1.menit 10detik karena ada delay tambahan dari loading api websitenya
         showVoc();
         echo 'JEDA... SHOW VOUCHER LAGI SETELAH 1MENIT' . PHP_EOL;
     }
-} elseif ($menuSelect == 6) {
+} elseif ($menuSelect == 7) {
 
-    getData();
-    getSessionId();
     $katakataSHOPEE = input("MASUKKAN TEXT KOMENTAR");
     $katakataSHOPEE = substr($katakataSHOPEE, 0, 150);
     // Pemeriksaan panjang string
@@ -179,8 +182,8 @@ if ($menuSelect == 1) {
             sleep($jedaNgulang);
         }
     }
-
-    // } elseif ($menuSelect == 6) {
+} elseif ($menuSelect == 8) {
+    endLive();
     // } elseif ($menuSelect == 7) {
 } else {
     echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!" . PHP_EOL;
@@ -221,97 +224,40 @@ function readBannedWordsFromFile($filePath)
         return [];
     }
 }
-function LiveData()
-{
-    global $cookies;
-    $urlData = 'https://creator.shopee.co.id/supply/api/lm/sellercenter/realtime/sessionList?page=1&pageSize=10&name=';
-    $headers = [
-        'authority' => 'creator.shopee.co.id',
-        'accept' => 'application/json',
-        'accept-language' => 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-        'content-type' => 'application/json',
-        'cookie' => $cookies,
-        'language' => 'en',
-        'sec-ch-ua' => '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-        'sec-ch-ua-mobile' => '?0',
-        'sec-ch-ua-platform' => '"Windows"',
-        'sec-fetch-dest' => 'empty',
-        'sec-fetch-mode' => 'cors',
-        'sec-fetch-site' => 'same-origin',
-        'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'x-env' => 'live',
-        'x-region' => 'id',
-        'x-region-domain' => 'co.id',
-        'x-region-timezone' => '+0700',
-    ];
-
-    $options = [
-        'http' => [
-            'header' => implode("\r" . PHP_EOL, array_map(function ($key, $value) {
-                return "$key: $value";
-            }, array_keys($headers), $headers)),
-        ],
-    ];
-
-    $context = stream_context_create($options);
-
-    try {
-        $response = file_get_contents($urlData, false, $context);
-        $data = json_decode($response, true);
-        $infoLive = $data['data']['list'][0];
-        return $infoLive;
-    } catch (Exception $error) {
-        echo $error;
-    }
-}
-
-function DataLive()
-{
-    global $sessionLive, $timestamp, $Title, $Live, $statusLive, $tanggalMulai, $jamMulai;
-    $sessionLive = LiveData()['sessionId'];
-    $timestamp = LiveData()['startTime'];
-    $Title = LiveData()['title'];
-    $Live = LiveData()['status'];
-    $timestamp_in_seconds = $timestamp / 1000;
-
-    $tanggalMulai = strtoupper(date('d/M', $timestamp_in_seconds));
-    $jamMulai = strtoupper(date('g:i a', $timestamp_in_seconds));
-
-    if ($Live == '1') {
-        $statusLive = 'RUNNING';
-    } else {
-        $statusLive = 'STOP';
-    }
-
-    echo "SESSION ID: $sessionLive\nLIVE TITLE: $Title\nLIVE TANGGAL: $tanggalMulai $jamMulai\nSTATUS LIVE: $statusLive" . PHP_EOL . PHP_EOL;
-}
-
-//get fake data live
 function getData()
 {
-    global $cookies, $sessionId, $deviceId, $sessionLive;
+    global $cookies, $sessionId, $deviceId, $cover_pic;
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/?cookies=' . urlencode($cookies));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+    curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
 
-    $sessionUrl = "https://live.shopee.co.id/webapi/v1/session/$sessionLive/preview?uuid=sd" . $sessionLive . "sd&ver=2";
-
-    $options = [
-        'http' => [
-            'header' => 'Cookie: ' . $cookies,
-            'referer' => "https://live.shopee.co.id/pc/preview?session=$sessionLive",
-        ],
-    ];
-
-    $context = stream_context_create($options);
-
-    $sessionData = file_get_contents($sessionUrl, false, $context);
-
-    // Decode JSON string into an array
-    $sessionData = json_decode($sessionData, true);
+    $result = curl_exec($ch);
+    curl_close($ch);
+    $sessionData = json_decode($result, true);
 
     if ($sessionData) {
         if ($sessionData['err_code'] === 0 && $sessionData['data'] && $sessionData['data']['session']) {
 
             $sessionId = $sessionData['data']['session']['session_id'];
             $deviceId = $sessionData['data']['session']['device_id'];
+            $timestamp = $sessionData['data']['session']['start_time'];
+            $cover_pic = $sessionData['data']['session']['cover_pic'];
+            $Title = $sessionData['data']['session']['title'];
+            $Live = $sessionData['data']['session']['status'];
+            $timestamp_in_seconds = $timestamp / 1000;
+
+            $tanggalMulai = strtoupper(date('d/M', $timestamp_in_seconds));
+            $jamMulai = strtoupper(date('g:i a', $timestamp_in_seconds));
+
+            if ($Live == '1') {
+                $statusLive = 'RUNNING';
+            } else {
+                $statusLive = 'STOP';
+            }
+            echo PHP_EOL . "--------|[ INFO DATA LIVE ]|--------" . PHP_EOL . PHP_EOL;
+            echo "SESSION ID: $sessionId\nLIVE TITLE: $Title\nLIVE TANGGAL: $tanggalMulai $jamMulai\nSTATUS LIVE: $statusLive" . PHP_EOL . PHP_EOL;
             // Return the session ID for further use
         } else {
             echo 'ERROR MENDAPATKAN SESSIONID : ' . $sessionData['err_msg'] . PHP_EOL;
@@ -323,6 +269,54 @@ function getData()
     }
 }
 
+function getRTMP()
+{
+    global $cookies, $sessionId, $deviceId, $domainId;
+
+    $sessionIdData = "https://live.shopee.co.id/webapi/v1/session/$sessionId/preview?uuid=$deviceId&ver=2";
+
+    $options = [
+        'http' => [
+            'header' => 'Cookie: ' . $cookies,
+            'referer' => "https://live.shopee.co.id/pc/preview?session=$sessionId",
+        ],
+    ];
+
+    $context = stream_context_create($options);
+
+    $sessionIdData = file_get_contents($sessionIdData, false, $context);
+    // Decode JSON string into an array
+    $sessionIdData = json_decode($sessionIdData, true);
+    // print_r($sessionIdData);
+    if ($sessionIdData) {
+        if ($sessionIdData['err_code'] === 0 && $sessionIdData['data'] && $sessionIdData['data']['session']) {
+            $keyLive = $sessionIdData['data']['push_addr_list'][1]['push_url'];
+            $domainId = $sessionIdData['data']['push_addr_list'][1]['domain_id'];
+            $misahKey    = explode("/live/", $keyLive);
+            $rtmp = $misahKey[0] . '/live/';
+            $key = $misahKey[1];
+            echo PHP_EOL . '===| STREAMING KEY INFO |===' . PHP_EOL . PHP_EOL;
+            echo 'DOMAINID: ' . $domainId . PHP_EOL;
+            echo 'KEY: ' . $key . PHP_EOL;
+            echo 'RTMP: ' . $rtmp . PHP_EOL;
+            echo 'RTMP/KEY: ' . $keyLive . PHP_EOL;
+            echo 'DASHBOARD LIVE: https://creator.shopee.co.id/dashboard/live/' . $sessionId . PHP_EOL . PHP_EOL;
+            echo PHP_EOL . '===| CARA LIVE SHOOPE |===' . PHP_EOL;
+            echo 'CARA LIVENYA GIMANA??,' . PHP_EOL;
+            echo 'LIVE LANGSUNG DARI SHOPE APP, DAN KETIKA SUDAH PLAY LANGSUNG AJH CLOSE APPNYA / HILANGIN,' . PHP_EOL;
+            echo 'LALU START DARI MULTI LOOP / TOOLS YANG KALIAN GUNAKAN!!' . PHP_EOL . PHP_EOL;
+            echo 'DATA RTMP DISAVE PADA FILE dataRTMP.txt' . PHP_EOL . PHP_EOL;
+            $fp = fopen("dataRTMP.txt", 'w');
+            fwrite($fp, "RTMP/KEY: $keyLive\n\nKEY: $key");
+            fclose($fp);
+            // Return the session ID for further use
+        } else {
+            echo 'ERROR MENDAPATKAN SESSIONID : ' . $sessionIdData['err_msg'] . PHP_EOL;
+        }
+    } else {
+        echo 'Error decoding JSON data.' . PHP_EOL;
+    }
+}
 //get data live
 function getSessionId()
 {
@@ -586,6 +580,33 @@ function showVoc()
     $result = curl_exec($ch);
     curl_close($ch);
     echo $result;
+}
+
+function endLive()
+{
+    global $cookies, $sessionId;
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/end.php?sessionid=' . $sessionId . '&cookies=' . urlencode($cookies));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+    curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+
+    $result = curl_exec($ch);
+    curl_close($ch);
+    $json_response = json_decode($result, true);
+
+    if ($json_response !== null) {
+        $err_code = isset($json_response['err_code']) ? $json_response['err_code'] : '';
+        $err_msg = isset($json_response['err_msg']) ? $json_response['err_msg'] : '';
+
+        if ($err_code === '3000057') {
+            echo "STREAMING SESSION $sessionId TIDAK ADA LIVE!!\n";
+        } elseif ($err_code === '0') {
+            echo "BERHASIL MEMBERHENTIKAN STREAMING SESSION: $sessionId\n";
+        } else {
+            echo "GAGAL MEMBERHENTIKAN STREAMING SESSION: $sessionId\nERROR: $err_msg";
+        }
+    }
 }
 
 //auto komen + ban filter kata-kata
