@@ -156,7 +156,7 @@ if ($menuSelect == 1) {
         }
     } while ($komenMenu == "1" || $komenMenu == "2");
 } elseif ($menuSelect == 6) {
-
+    $keyApi =  readline("[ ! ] KEY => : ");
     echo PHP_EOL . 'AUTO SHOW VOUCHER SETIAP 1 MENIT' . PHP_EOL;
     while (true) {
         sleep(40); //jika ingin diubah ditambah 30, cntoh disamping 40. jika kamu jalankan dia akan delay hampir 1.menit 10detik karena ada delay tambahan dari loading api websitenya
@@ -570,9 +570,9 @@ function pinkomenLive($message)
 
 function showVoc()
 {
-    global $cookies, $sessionId;
+    global $cookies, $sessionId, $keyApi;
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/api.php?key=SGB10!&sessionid=' . $sessionId . '&cookies=' . urlencode($cookies));
+    curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/api.php?key=' . $keyApi . '&sessionid=' . $sessionId . '&cookies=' . urlencode($cookies));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
     curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
