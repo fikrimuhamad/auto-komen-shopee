@@ -7,8 +7,8 @@ cara run: <b>php runShopee.php</b><br><br>
 
 ![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/83eddf29-244d-4c82-aff0-6e9d50d550b8)
 
-<br><br>
-# SUPPORT AA.
-<i>QR SOPIPAY</i><br>
+#
+# SUPPORT AA
+<b>QR SOPIPAY</b><br>
 
 ![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/b41ba3f9-932b-4a5b-8bcf-3790c718482c)
