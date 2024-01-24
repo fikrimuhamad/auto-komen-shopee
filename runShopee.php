@@ -1,26 +1,46 @@
 <?php
 date_default_timezone_set('Asia/Jakarta');
-// Fungsi untuk mengambil data cookies dari file
+
+// JANGAN DIUBAH YANG INI
 $cookiesFilePath = 'cookie.txt';
 $cookies = readCookiesFromFile($cookiesFilePath);
+
 if (!$cookies) {
     error_log('Cookies not available. Please check your cookies.txt file.');
     exit(1);
 }
-echo PHP_EOL . "--------| INFO DATA LIVE |--------" . PHP_EOL . PHP_EOL;
-// UNTUK GET DATA LIVE
+
+$banwordFilePath = 'bannedText.txt';
+$bannedWords = readBannedWordsFromFile($banwordFilePath);
+if (!$bannedWords) {
+    error_log('BannedWords not available. Please check your bannedWords.txt file.');
+    exit(1);
+}
+
+// INI JUGA
+$sessionId = null;
+$chatroomId = null;
+$deviceId = null;
+
+$bannedUsers = [];
+$processedMessages = [];
+$lastBotMessageID = [];
+
+echo PHP_EOL . "--------|[ INFO DATA LIVE ]|--------" . PHP_EOL;
+// INI JUGA
 DataLive();
 
 inputLagi:
-echo "----------- [ MENU ] -----------" . PHP_EOL;
+echo "-----------|[ MENU ]|-----------" . PHP_EOL;
 echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN" . PHP_EOL . PHP_EOL;
-echo "1. BOT AUTO KOMEN + AUTO GET USERSIG + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
-echo "2. GET KOMEN + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
-echo "3. RANDOM PIN PRODUK *SETIAP 1MENIT / ATUR JEDA SENDIRI" . PHP_EOL;
-echo "4. BALES KOMENTAR" . PHP_EOL;
-echo "5. PIN KOMENTAR" . PHP_EOL;
+echo "1. AUTO KOMENTAR + AUTO GET USERSIG + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
+echo "2. GET KOMENTAR + AUTO BANNED FILTER KATA-KATA" . PHP_EOL;
+echo "3. AUTO PIN PRODUK / *SOON AUTO PIN BY REQUEST" . PHP_EOL;
+echo "4. BALES KOMENTAR / PIN KOMENTAR" . PHP_EOL;
+echo "5. AUTO KOMENTAR" . PHP_EOL . PHP_EOL;
 
 $menuSelect =  input("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
+
 if ($menuSelect == 1) {
     echo PHP_EOL . "KATA-KATA PADA FILE KEYWORD YANG TERSEDIA" . PHP_EOL;
     $keywordData = include "keyword.php";
@@ -31,20 +51,6 @@ if ($menuSelect == 1) {
     }
     echo PHP_EOL . "\nPESAN :" . PHP_EOL;
     echo "EDIT KATA-KATA DIATAS PADA FILE keyword.php" . PHP_EOL;
-
-    $banwordFilePath = 'bannedText.txt';
-    $bannedWords = readBannedWordsFromFile($banwordFilePath);
-
-    $sessionId = null;
-    $chatroomId = null;
-    $deviceId = null;
-
-    $bannedUsers = [];
-    $processedMessages = [];
-    $lastBotMessageID = [];
-
-    getData();
-    getSessionId();
 
     while (true) {
         $startTime = microtime(true); // Waktu awal eksekusi
@@ -60,30 +66,14 @@ if ($menuSelect == 1) {
         }
     }
 } elseif ($menuSelect == 2) {
-    $banwordFilePath = 'bannedText.txt';
-    $bannedWords = readBannedWordsFromFile($banwordFilePath);
-
-    $sessionId = null;
-    $chatroomId = null;
-    $deviceId = null;
-
-    $bannedUsers = [];
-    $processedMessages = [];
-    $lastBotMessageID = [];
-
-    getData();
-    getSessionId();
 
     while (true) {
         $startTime = microtime(true); // Waktu awal eksekusi
-
+        //bagian utama
         GetMessage();
 
         $endTime = microtime(true); // Waktu setelah eksekusi checkMessage
-
         $elapsedTime = $endTime - $startTime; // Waktu yang diperlukan untuk eksekusi checkMessage
-
-        // Jika waktu yang diperlukan kurang dari 5 detik, tunggu selama (5 - elapsedTime) detik
         if ($elapsedTime < 5) {
             sleep(5 - $elapsedTime);
         } else {
@@ -92,21 +82,23 @@ if ($menuSelect == 1) {
         }
     }
 } elseif ($menuSelect == 3) {
-    getData();
-    getSessionId();
+
     echo 'ATUR PIN PRODUK SESUAI PILIHANMU' . PHP_EOL;
     echo '1. SETIAP 60 DETIK' . PHP_EOL;
     echo '2. ATUR WAKTU SENDIRI' . PHP_EOL;
-    $menuSelect =  input("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
-    if ($menuSelect == 1) {
+    $menuPin =  readline("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
+    if ($menuPin == 1) {
         echo PHP_EOL . 'AUTO PIN PRODUK SETIAP 60 DETIK' . PHP_EOL;
         $jedaPin = 61;
         while (true) {
             showItem();
         }
-    } elseif ($menuSelect == 2) {
-        $jedaPin =  input("MASUKKAN DELAY PIN PRODUK |DETIK *(1-10000)" . PHP_EOL);
-        echo PHP_EOL . 'AUTO PIN PRODUK SETIAP ' . $jedaPin . ' DETIK' . PHP_EOL;
+    } elseif ($menuPin == 2) {
+        echo "MASUKKAN DELAY PIN PRODUK" . PHP_EOL;
+        $jedaNgulang = readline("DETIK *(1-10000) => : ");
+        $menit = $jedaNgulang / 60;
+        // memunculkan result detik / 60
+        echo PHP_EOL . 'AUTO PIN PRODUK SETIAP ' . number_format($menit) . ' MENIT' . PHP_EOL;
         while (true) {
             showItem();
         }
@@ -115,57 +107,73 @@ if ($menuSelect == 1) {
         goto inputLagi;
     }
 } elseif ($menuSelect == 4) {
-    // Fungsi untuk membaca cookies dari file
-    $cookiesFilePath = 'cookie.txt';
-    $cookies = readCookiesFromFile($cookiesFilePath);
-    if (!$cookies) {
-        error_log('Cookies not available. Please check your cookies.txt file.');
-        exit(1);
-    }
-    getData();
-    getSessionId();
-    // PERULANGAN UNTUK MENGIRIM PESAN LAGI
-    while (true) {
-        KomenLagi:
-        $katakataSHOPEE = input("TEXT KOMENTAR");
 
-        // Memastikan panjang string tidak melebihi 150 karakter
-        $katakataSHOPEE = substr($katakataSHOPEE, 0, 150);
-
-        // Pemeriksaan panjang string
-        if (str_word_count($katakataSHOPEE) > 150) {
-            echo 'PESAN TIDAK BOLEH LEBIH DARI 150 KATA';
-            goto KomenLagi;
+    menuKomen:
+    do {
+        echo "1. KOMEN BIASA\n2. PIN KOMEN" . PHP_EOL;
+        $komenMenu =  readline("PILIH MENU:" . PHP_EOL);
+        if ($komenMenu == "1") {
+            // PERULANGAN UNTUK MENGIRIM PESAN LAGI
+            komenLagi:
+            $katakataSHOPEE = input("TEXT PIN KOMENTAR");
+            $katakataSHOPEE = substr($katakataSHOPEE, 0, 150);
+            // Pemeriksaan panjang string
+            if (str_word_count($katakataSHOPEE) > 150) {
+                echo 'PESAN TIDAK BOLEH LEBIH DARI 150 KATA';
+            } else {
+                komenLive($katakataSHOPEE) . PHP_EOL . PHP_EOL;
+                goto komenLagi;
+            }
+        } else if ($komenMenu == "2") {
+            pinLagi:
+            // PERULANGAN UNTUK MENGIRIM PESAN LAGI
+            $katakataSHOPEE = input("TEXT PIN KOMENTAR");
+            $katakataSHOPEE = substr($katakataSHOPEE, 0, 150);
+            // Pemeriksaan panjang string
+            if (str_word_count($katakataSHOPEE) > 150) {
+                echo 'PESAN TIDAK BOLEH LEBIH DARI 150 KATA';
+            } else {
+                pinkomenLive($katakataSHOPEE) . PHP_EOL . PHP_EOL;
+                $pilihan =  readline("PIN KOMEN LAGI ?? (Y / N)" . PHP_EOL);
+                do {
+                    if ($pilihan == "y" || $pilihan == "Y") {
+                        goto pinLagi;
+                    } else {
+                        // menjalankan kembali sc Shopee
+                        exec('start cmd /k php ShopeeRun.php');
+                    }
+                } while ($pilihan == "y" || $pilihan == "Y");
+            }
         } else {
-            komenLive($katakataSHOPEE);
-            goto KomenLagi;
+            echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!\nANDA AKAN DIKEMBALIKAN KEPILIHAN MENU!!" . PHP_EOL . PHP_EOL;
+            sleep(2);
+            goto menuKomen;
         }
-    }
+    } while ($komenMenu == "1" || $komenMenu == "2");
 } elseif ($menuSelect == 5) {
-    // Fungsi untuk membaca cookies dari file
-    $cookiesFilePath = 'cookie.txt';
-    $cookies = readCookiesFromFile($cookiesFilePath);
-    if (!$cookies) {
-        error_log('Cookies not available. Please check your cookies.txt file.');
-        exit(1);
-    }
+
     getData();
     getSessionId();
-
-    // PERULANGAN UNTUK MENGIRIM PESAN LAGI
-    $katakataSHOPEE = input("TEXT PIN KOMENTAR");
-
-    // Memastikan panjang string tidak melebihi 150 karakter
+    $katakataSHOPEE = input("MASUKKAN TEXT KOMENTAR");
     $katakataSHOPEE = substr($katakataSHOPEE, 0, 150);
-
     // Pemeriksaan panjang string
     if (str_word_count($katakataSHOPEE) > 150) {
         echo 'PESAN TIDAK BOLEH LEBIH DARI 150 KATA';
     } else {
-        pinkomenLive($katakataSHOPEE) . PHP_EOL;
+        echo "MASUKKAN JEDA KIRIM KOMEN" . PHP_EOL;
+        $jedaNgulang = readline("DETIK *(1-10000) => : ");
+        $menit = $jedaNgulang / 60;
+        // memunculkan result detik / 60
+        echo 'MENGIRIM PESAN BERULANG SETIAP ' . number_format($menit) . ' MENIT' . PHP_EOL;
+        while (true) {
+            komenLiveNgulang($katakataSHOPEE);
+            echo 'JEDA... MENGIRIM KOMEN LAGI SETELAH ' . number_format($menit) . ' MENIT' . PHP_EOL;
+            sleep($jedaNgulang);
+        }
     }
-    // } elseif ($menuSelect == 6) {
 
+    // } elseif ($menuSelect == 6) {
+    // } elseif ($menuSelect == 7) {
 } else {
     echo "[ GAGAL!! ] PILIHAN TIDAK DITEMUKAN!!" . PHP_EOL;
     goto inputLagi;
@@ -205,42 +213,6 @@ function readBannedWordsFromFile($filePath)
         return [];
     }
 }
-
-//get fake data live
-function getData()
-{
-    global $cookies, $sessionId, $deviceId, $sessionLive;
-
-    $sessionUrl = "https://live.shopee.co.id/webapi/v1/session/$sessionLive/preview?uuid=sd" . $sessionLive . "sd&ver=2";
-
-    $options = [
-        'http' => [
-            'header' => 'Cookie: ' . $cookies,
-            'referer' => "https://live.shopee.co.id/pc/preview?session=$sessionLive",
-        ],
-    ];
-
-    $context = stream_context_create($options);
-
-    $sessionData = file_get_contents($sessionUrl, false, $context);
-
-    // Decode JSON string into an array
-    $sessionData = json_decode($sessionData, true);
-
-    if ($sessionData) {
-        if ($sessionData['err_code'] === 0 && $sessionData['data'] && $sessionData['data']['session']) {
-
-            $sessionId = $sessionData['data']['session']['session_id'];
-            $deviceId = $sessionData['data']['session']['device_id'];
-            // Return the session ID for further use
-        } else {
-            echo 'Error getting session ID: ' . $sessionData['err_msg'] . PHP_EOL;
-        }
-    } else {
-        echo 'Error decoding JSON data.' . PHP_EOL;
-    }
-}
-
 function LiveData()
 {
     global $cookies;
@@ -287,12 +259,11 @@ function LiveData()
 
 function DataLive()
 {
-    global $dataLive, $sessionLive, $timestamp, $Title, $Live, $statusLive, $tanggalMulai, $jamMulai;
-    $dataLive = LiveData();
-    $sessionLive = $dataLive['sessionId'];
-    $timestamp = $dataLive['startTime'];
-    $Title = $dataLive['title'];
-    $Live = $dataLive['status'];
+    global $sessionLive, $timestamp, $Title, $Live, $statusLive, $tanggalMulai, $jamMulai;
+    $sessionLive = LiveData()['sessionId'];
+    $timestamp = LiveData()['startTime'];
+    $Title = LiveData()['title'];
+    $Live = LiveData()['status'];
     $timestamp_in_seconds = $timestamp / 1000;
 
     $tanggalMulai = strtoupper(date('d/M', $timestamp_in_seconds));
@@ -307,10 +278,48 @@ function DataLive()
     echo "SESSION ID: $sessionLive\nLIVE TITLE: $Title\nLIVE TANGGAL: $tanggalMulai $jamMulai\nSTATUS LIVE: $statusLive" . PHP_EOL . PHP_EOL;
 }
 
+//get fake data live
+function getData()
+{
+    global $cookies, $sessionId, $deviceId, $sessionLive;
+
+    $sessionUrl = "https://live.shopee.co.id/webapi/v1/session/$sessionLive/preview?uuid=sd" . $sessionLive . "sd&ver=2";
+
+    $options = [
+        'http' => [
+            'header' => 'Cookie: ' . $cookies,
+            'referer' => "https://live.shopee.co.id/pc/preview?session=$sessionLive",
+        ],
+    ];
+
+    $context = stream_context_create($options);
+
+    $sessionData = file_get_contents($sessionUrl, false, $context);
+
+    // Decode JSON string into an array
+    $sessionData = json_decode($sessionData, true);
+
+    if ($sessionData) {
+        if ($sessionData['err_code'] === 0 && $sessionData['data'] && $sessionData['data']['session']) {
+
+            $sessionId = $sessionData['data']['session']['session_id'];
+            $deviceId = $sessionData['data']['session']['device_id'];
+            // Return the session ID for further use
+        } else {
+            echo 'ERROR MENDAPATKAN SESSIONID : ' . $sessionData['err_msg'] . PHP_EOL;
+            echo 'SILAHKAN CEK COOKIE KAMU, APAKAH SUDAH TERBARU ATAU BELUM!!';
+            exit();
+        }
+    } else {
+        echo 'Error decoding JSON data.' . PHP_EOL;
+    }
+}
+
 //get data live
 function getSessionId()
 {
     global $cookies, $sessionId, $chatroomId, $deviceId, $sellerId, $usersig;
+    getData();
 
     $sessionIdData = "https://live.shopee.co.id/webapi/v1/session/$sessionId/preview?uuid=$deviceId&ver=2";
 
@@ -332,27 +341,24 @@ function getSessionId()
         if ($sessionIdData['err_code'] === 0 && $sessionIdData['data'] && $sessionIdData['data']['session']) {
             $sellerId = $sessionIdData['data']['session']['uid'];
             $usernameId = $sessionIdData['data']['session']['username'];
-            $sessionId = $sessionIdData['data']['session']['session_id'];
             $chatroomId = $sessionIdData['data']['session']['chatroom_id'];
-            $deviceId = $sessionIdData['data']['session']['device_id'];
             $usersig = $sessionIdData['data']['usersig'];
-
-            echo PHP_EOL . '===| LIVE INFO |===' . PHP_EOL;
-            echo 'USERNAME LIVE: ' . $usernameId . PHP_EOL;
-            echo 'UUID / DEVICEID LIVE: ' . $deviceId . PHP_EOL;
+            echo PHP_EOL.'------|[ SESSION DATA LIVE ]|------' . PHP_EOL;
+            echo 'USERNAME: ' . $usernameId . PHP_EOL;
+            echo 'SELLER ID: ' . $sellerId . PHP_EOL;
+            echo 'DEVICEID LIVE: ' . $deviceId . PHP_EOL;
             echo 'CHATROOM LIVE: ' . $chatroomId . PHP_EOL;
+            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
             echo 'USERSIG LIVE: ' . $usersig . PHP_EOL . PHP_EOL;
-
-            getData();
-
             // Return the session ID for further use
         } else {
-            echo 'Error getting session ID: ' . $sessionIdData['err_msg'] . PHP_EOL;
+            echo 'ERROR MENDAPATKAN SESSIONID : ' . $sessionIdData['err_msg'] . PHP_EOL;
         }
     } else {
         echo 'Error decoding JSON data.' . PHP_EOL;
     }
 }
+
 function containsBannedWords($content)
 {
     global $bannedWords;
@@ -418,7 +424,6 @@ function komenLive($message)
             'header' => [
                 'Cookie: ' . $cookies,
                 'Content-Type: application/json',
-                'referer: https://live.shopee.co.id/pc/live?session=' . $sessionId,
             ],
             'method' => 'POST',
             'content' => json_encode($postData),
@@ -454,9 +459,9 @@ function komenLive($message)
     }
 }
 
-function pinkomenLive($message)
+function komenLiveNgulang($message)
 {
-    global $sessionId, $cookies, $deviceId, $responseKomen, $usersig;
+    global $sessionId, $cookies, $deviceId, $responseKomen, $usersig, $jedaNgulang;
 
     $komenUrl = 'https://live.shopee.co.id/webapi/v1/session/' . $sessionId . '/message';
 
@@ -464,7 +469,7 @@ function pinkomenLive($message)
         'uuid' => $deviceId,
         'usersig' => $usersig,
         'content' => '{"type":101,"content":"' . $message . '"}',
-        'pin' => true,
+        'pin' => false,
     ];
 
     $options = [
@@ -497,13 +502,66 @@ function pinkomenLive($message)
             if ($errMsg === 'YourCustomErrorMessage') {
                 echo 'Custom Error Handling: ' . $errMsg . PHP_EOL;
             } else {
-                echo 'STATUS PIN KOMENTAR: ' . strtoupper($errMsg);
+                echo 'STATUS PESAN BOT: ' . strtoupper($errMsg);
             }
         }
 
         // Check if data.message_id exists
         if (isset($responseData['data']['message_id'])) {
-            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . "MESSAGE PIN KOMENTAR: $message" . PHP_EOL . PHP_EOL;
+            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . PHP_EOL;
+        }
+    }
+}
+
+function pinkomenLive($message)
+{
+    global $sessionId, $cookies, $deviceId, $responseKomen, $usersig;
+
+    $komenUrl = 'https://live.shopee.co.id/webapi/v1/session/' . $sessionId . '/message';
+
+    $postData = [
+        'uuid' => $deviceId,
+        'usersig' => $usersig,
+        'content' => '{"type":101,"content":"' . $message . '"}',
+        'pin' => true,
+    ];
+
+    $options = [
+        'http' => [
+            'header' => [
+                'Cookie: ' . $cookies,
+                'Content-Type: application/json',
+            ],
+            'method' => 'POST',
+            'content' => json_encode($postData),
+        ],
+    ];
+
+    $context = stream_context_create($options);
+
+    $responseKomen = file_get_contents($komenUrl, false, $context);
+
+    if ($responseKomen === FALSE) {
+        echo 'Error fetching data.';
+    } else {
+        // Parse JSON response
+        $responseData = json_decode($responseKomen, true);
+
+        // Check if err_msg exists
+        if (isset($responseData['err_msg'])) {
+            $errMsg = $responseData['err_msg'];
+
+            // Add your custom handling for err_msg
+            if ($errMsg === 'YourCustomErrorMessage') {
+                echo 'Custom Error Handling: ' . $errMsg . PHP_EOL;
+            } else {
+                echo 'STATUS PESAN BOT: ' . strtoupper($errMsg);
+            }
+        }
+
+        // Check if data.message_id exists
+        if (isset($responseData['data']['message_id'])) {
+            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . "MESSAGE BOT: $message" . PHP_EOL . PHP_EOL;
         }
     }
 }
@@ -605,6 +663,22 @@ function checkMessage()
 
             // Include file with keyword-response pairs
             $keywordData = include "keyword.php";
+
+            // Check if the message contains a specific phrase to be skipped
+            $skipPhrases = ["Saya bergabung Lelang Time!", "Saya bergabung Lelang Yuk!", "Saya bergabung Cepet Cepetan Time!", "Saya bergabung Cepet Cepetan Dapat harga murah!", "Saya bergabung Lelang Yuk Guyss!"];
+            $skipMessage = false;
+            foreach ($skipPhrases as $skipPhrase) {
+                if (strpos(strtolower($message['content']), strtolower($skipPhrase)) !== false) {
+                    $skipMessage = true;
+                    break; // Stop checking after the first match
+                }
+            }
+
+            if ($skipMessage) {
+                // Skip processing this message
+                file_put_contents('auto_reply.txt', '');
+                continue;
+            }
 
             $foundKeyword = false;
             foreach ($keywordData as $keyword => $response) {
@@ -813,7 +887,7 @@ function showItem()
 
             // Return the session ID for further use
         } else {
-            echo 'Error getting session ID: ' . $sessionIdData['err_msg'] . PHP_EOL;
+            echo 'ERROR MENDAPATKAN SESSIONID : ' . $sessionIdData['err_msg'] . PHP_EOL;
         }
     } else {
         echo 'Error decoding JSON data.' . PHP_EOL;
