@@ -2,10 +2,10 @@
 <h3>JANGAN LUPA EDIT BAGIAN <i>KEYWORD.PHP</i><br>BUAT EDIT KATA-KATA UNTUK BOTNYA YA ANJG!!</H3><br>
 <b>DAN JANGAN LUPA JUGA DIPASANG XAMPPNYA DLU YA ANJG KARENA INI PHP BUKAN JS!!</b><br>
 <br><br>
-JANGAN LUPA MASUKKAN SESSIONID LIVENYA, SOALNYA UNTUK AMBIL DATA BOT KOMEN!!<br>
+JANGAN LUPA SEBELUM DIJALANKAN LIVE DULU BARU DIRUN SCNYA, SOALNYA UNTUK AMBIL DATA BOT!!<br>
 cara run: <b>php runShopee.php</b><br><br>
 
-![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/83eddf29-244d-4c82-aff0-6e9d50d550b8)
+![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/1e4dda37-a9f0-4e20-85eb-28e50b81969f)
 
 #
 # SUPPORT AA
