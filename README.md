@@ -5,10 +5,11 @@
 JANGAN LUPA SEBELUM DIJALANKAN, HARUS LIVE DULU BARU DIJALANKAN. SOALNYA UNTUK AMBIL DATA BOT!!<br>
 cara run: <b>php runShopee.php</b><br><br>
 
-![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/1e4dda37-a9f0-4e20-85eb-28e50b81969f)
+![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/d8dc6345-41ec-4942-8cc7-6327221f85c6)
+
 
 #
-# SUPPORT AA
+# AA KASIAN AA
 <b>QR SOPIPAY</b><br>
 
 ![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/b41ba3f9-932b-4a5b-8bcf-3790c718482c)
