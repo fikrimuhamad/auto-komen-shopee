@@ -143,9 +143,6 @@ if ($menuSelect == 1) {
                 do {
                     if ($pilihan == "y" || $pilihan == "Y") {
                         goto pinLagi;
-                    } else {
-                        // menjalankan kembali sc Shopee
-                        exec('start cmd /k php ShopeeRun.php');
                     }
                 } while ($pilihan == "y" || $pilihan == "Y");
             }
