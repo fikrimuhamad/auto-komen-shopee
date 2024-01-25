@@ -221,9 +221,7 @@ function readBannedWordsFromFile($filePath)
         return [];
     }
 }
-function getData()
-{
-    global $cookies, $sessionId, $deviceId, $cover_pic;
+global $cookies, $sessionId, $deviceId, $cover_pic, $chatroomId;
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/?cookies=' . urlencode($cookies));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -239,8 +237,8 @@ function getData()
 
             $sessionId = $sessionData['data']['session']['session_id'];
             $deviceId = $sessionData['data']['session']['device_id'];
+            $chatroomId = $sessionData['data']['session']['chatroom_id'];
             $timestamp = $sessionData['data']['session']['start_time'];
-            $cover_pic = $sessionData['data']['session']['cover_pic'];
             $Title = $sessionData['data']['session']['title'];
             $Live = $sessionData['data']['session']['status'];
             $timestamp_in_seconds = $timestamp / 1000;
