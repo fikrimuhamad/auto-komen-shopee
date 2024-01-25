@@ -28,7 +28,7 @@ $lastBotMessageID = [];
 echo "SEDANG MENGAMBIL DATA LIVE..." . PHP_EOL;
 // INI JUGA
 getData();
-
+getSessionId();
 inputLagi:
 echo "-----------|[ MENU ]|-----------" . PHP_EOL;
 echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN" . PHP_EOL . PHP_EOL;
@@ -100,8 +100,8 @@ if ($menuSelect == 1) {
         }
     } elseif ($menuPin == 2) {
         echo "MASUKKAN DELAY PIN PRODUK" . PHP_EOL;
-        $jedaNgulang = readline("DETIK *(1-10000) => : ");
-        $menit = $jedaNgulang / 60;
+        $jedaPin = readline("DETIK *(1-10000) => : ");
+        $menit = $jedaPin / 60;
         // memunculkan result detik / 60
         echo PHP_EOL . 'AUTO PIN PRODUK SETIAP ' . number_format($menit) . ' MENIT' . PHP_EOL;
         while (true) {
@@ -120,7 +120,7 @@ if ($menuSelect == 1) {
         if ($komenMenu == "1") {
             // PERULANGAN UNTUK MENGIRIM PESAN LAGI
             komenLagi:
-            $katakataSHOPEE = input("TEXT PIN KOMENTAR");
+            $katakataSHOPEE = input("TEXT KOMENTAR");
             $katakataSHOPEE = substr($katakataSHOPEE, 0, 150);
             // Pemeriksaan panjang string
             if (str_word_count($katakataSHOPEE) > 150) {
@@ -143,6 +143,9 @@ if ($menuSelect == 1) {
                 do {
                     if ($pilihan == "y" || $pilihan == "Y") {
                         goto pinLagi;
+                    } else {
+                        // menjalankan kembali sc Shopee
+                        exec('start cmd /k php ShopeeRun.php');
                     }
                 } while ($pilihan == "y" || $pilihan == "Y");
             }
@@ -153,6 +156,7 @@ if ($menuSelect == 1) {
         }
     } while ($komenMenu == "1" || $komenMenu == "2");
 } elseif ($menuSelect == 6) {
+
     $keyApi =  readline("[ ! ] KEY => : ");
     echo PHP_EOL . 'AUTO SHOW VOUCHER SETIAP 1 MENIT' . PHP_EOL;
     while (true) {
@@ -180,6 +184,7 @@ if ($menuSelect == 1) {
         }
     }
 } elseif ($menuSelect == 8) {
+
     endLive();
     // } elseif ($menuSelect == 7) {
 } else {
@@ -221,7 +226,9 @@ function readBannedWordsFromFile($filePath)
         return [];
     }
 }
-global $cookies, $sessionId, $deviceId, $cover_pic, $chatroomId;
+function getData()
+{
+    global $cookies, $sessionId, $deviceId, $sellerId;
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/?cookies=' . urlencode($cookies));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -234,10 +241,9 @@ global $cookies, $sessionId, $deviceId, $cover_pic, $chatroomId;
 
     if ($sessionData) {
         if ($sessionData['err_code'] === 0 && $sessionData['data'] && $sessionData['data']['session']) {
-
             $sessionId = $sessionData['data']['session']['session_id'];
             $deviceId = $sessionData['data']['session']['device_id'];
-            $chatroomId = $sessionData['data']['session']['chatroom_id'];
+            $sellerId = $sessionData['data']['session']['uid'];
             $timestamp = $sessionData['data']['session']['start_time'];
             $Title = $sessionData['data']['session']['title'];
             $Live = $sessionData['data']['session']['status'];
@@ -252,7 +258,7 @@ global $cookies, $sessionId, $deviceId, $cover_pic, $chatroomId;
                 $statusLive = 'STOP';
             }
             echo PHP_EOL . "--------|[ INFO DATA LIVE ]|--------" . PHP_EOL . PHP_EOL;
-            echo "SESSION ID: $sessionId\nLIVE TITLE: $Title\nLIVE TANGGAL: $tanggalMulai $jamMulai\nSTATUS LIVE: $statusLive" . PHP_EOL . PHP_EOL;
+            echo "SESSION ID: $sessionId\nLIVE TITLE: $Title\nLIVE TANGGAL: $tanggalMulai $jamMulai\nSTATUS LIVE: $statusLive" . PHP_EOL;
             // Return the session ID for further use
         } else {
             echo 'ERROR MENDAPATKAN SESSIONID : ' . $sessionData['err_msg'] . PHP_EOL;
@@ -315,8 +321,7 @@ function getRTMP()
 //get data live
 function getSessionId()
 {
-    global $cookies, $sessionId, $chatroomId, $deviceId, $sellerId, $usersig;
-    getData();
+    global $cookies, $sessionId, $chatroomId, $deviceId, $usersig, $sellerId;
 
     $sessionIdData = "https://live.shopee.co.id/webapi/v1/session/$sessionId/preview?uuid=$deviceId&ver=2";
 
@@ -336,10 +341,10 @@ function getSessionId()
 
     if ($sessionIdData) {
         if ($sessionIdData['err_code'] === 0 && $sessionIdData['data'] && $sessionIdData['data']['session']) {
-            $sellerId = $sessionIdData['data']['session']['uid'];
             $usernameId = $sessionIdData['data']['session']['username'];
             $chatroomId = $sessionIdData['data']['session']['chatroom_id'];
             $usersig = $sessionIdData['data']['usersig'];
+
             echo PHP_EOL . '------|[ SESSION DATA LIVE ]|------' . PHP_EOL;
             echo 'USERNAME: ' . $usernameId . PHP_EOL;
             echo 'SELLER ID: ' . $sellerId . PHP_EOL;
@@ -421,6 +426,7 @@ function komenLive($message)
             'header' => [
                 'Cookie: ' . $cookies,
                 'Content-Type: application/json',
+                'referer: https://live.shopee.co.id/pc/live?session=' . $sessionId,
             ],
             'method' => 'POST',
             'content' => json_encode($postData),
@@ -451,14 +457,14 @@ function komenLive($message)
 
         // Check if data.message_id exists
         if (isset($responseData['data']['message_id'])) {
-            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . "MESSAGE BOT: $message" . PHP_EOL . PHP_EOL;
+            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . PHP_EOL;
         }
     }
 }
 
 function komenLiveNgulang($message)
 {
-    global $sessionId, $cookies, $deviceId, $responseKomen, $usersig, $jedaNgulang;
+    global $sessionId, $cookies, $deviceId, $responseKomen, $usersig;
 
     $komenUrl = 'https://live.shopee.co.id/webapi/v1/session/' . $sessionId . '/message';
 
@@ -528,6 +534,7 @@ function pinkomenLive($message)
             'header' => [
                 'Cookie: ' . $cookies,
                 'Content-Type: application/json',
+                'referer: https://live.shopee.co.id/pc/live?session=' . $sessionId,
             ],
             'method' => 'POST',
             'content' => json_encode($postData),
@@ -558,7 +565,7 @@ function pinkomenLive($message)
 
         // Check if data.message_id exists
         if (isset($responseData['data']['message_id'])) {
-            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . "MESSAGE BOT: $message" . PHP_EOL . PHP_EOL;
+            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . PHP_EOL;
         }
     }
 }
@@ -607,7 +614,7 @@ function endLive()
 //auto komen + ban filter kata-kata
 function checkMessage()
 {
-    global $chatroomId, $deviceId, $cookies, $processedMessages, $bannedUsers, $sessionId, $user, $lastBotMessageID, $userLastResponseTime, $sellerId;
+    global $chatroomId, $deviceId, $cookies, $processedMessages, $bannedUsers, $user, $lastBotMessageID, $userLastResponseTime, $sellerId;
 
     $apiUrl = 'https://chatroom-live.shopee.co.id/api/v1/fetch/chatroom/' . $chatroomId . '/message?uuid=' . $deviceId;
 
