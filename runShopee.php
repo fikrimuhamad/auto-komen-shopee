@@ -58,17 +58,8 @@ if ($menuSelect == 1) {
     echo "EDIT KATA-KATA DIATAS PADA FILE keyword.php" . PHP_EOL;
 
     while (true) {
-        $startTime = microtime(true); // Waktu awal eksekusi
         checkMessage();
-        $endTime = microtime(true); // Waktu setelah eksekusi checkMessage
-        $elapsedTime = $endTime - $startTime; // Waktu yang diperlukan untuk eksekusi checkMessage
-        // Jika waktu yang diperlukan kurang dari 5 detik, tunggu selama (5 - elapsedTime) detik
-        if ($elapsedTime < 5) {
-            sleep(5 - $elapsedTime);
-        } else {
-            // Jika waktu yang diperlukan lebih dari atau sama dengan 5 detik, tetap tidur selama 3 detik
-            sleep(3);
-        }
+        sleep(3);
     }
 } elseif ($menuSelect == 3) {
 
