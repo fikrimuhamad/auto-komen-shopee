@@ -502,39 +502,38 @@ function showVoc()
 
 function endLive()
 {
-    global $cookies, $sessionId;
+    global $sessionId, $cookie;
+    $apiUrl = "https://live.shopee.co.id/api/v1/session/{$sessionId}/end/";
+
+    $requestHeaders = [
+        'http' => [
+            'method' => 'POST',
+            'header' => implode("\r\n", [
+                'Host: live.shopee.co.id',
+                'User-Agent: ShopeeID/3.15.24 (com.beeasy.shopee.id; build:3.15.24; iOS 16.7.2) Alamofire/5.0.5 language=id app_type=1',
+                'Content-Type: application/json',
+                'Cookie: ' . $cookie,
+            ]),
+        ],
+    ];
+
+    $context = stream_context_create($requestHeaders);
+
     try {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/end.php?sessionid=' . $sessionId . '&cookies=' . urlencode($cookies));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-        curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
-
-        $result = curl_exec($ch);
-
-
-        curl_close($ch);
-
-        if ($result === null && json_last_error() !== JSON_ERROR_NONE) {
-            echo $result;
-            exit(1);
-        }
-        $json_response = json_decode($result, true);
-
-        if ($json_response !== null) {
-            $err_code = isset($json_response['err_code']) ? $json_response['err_code'] : '';
-            $err_msg = isset($json_response['err_msg']) ? $json_response['err_msg'] : '';
-
-            if ($err_code === '3000057') {
-                echo "STREAMING SESSION $sessionId TIDAK ADA LIVE!!\n";
-            } elseif ($err_code === '0') {
-                echo "BERHASIL MEMBERHENTIKAN STREAMING SESSION: $sessionId\n";
-            } else {
-                echo "GAGAL MEMBERHENTIKAN STREAMING SESSION: $sessionId\nERROR: $err_msg";
-            }
+        $response = file_get_contents($apiUrl, false, $context);
+        $json_response = json_decode($response, true);
+        if ($json_response['err_code'] === 0 && $json_response['err_msg']) {
+            echo "BERHASIL MEMBERHENTIKAN STREAMING SESSION: $sessionId\n";
+        } elseif ($json_response['err_code'] === 3000057) {
+            echo "STREAMING SESSION $sessionId TIDAK ADA LIVE!!\n";
+        } elseif ($json_response['err_code'] === 3000059) {
+            echo "STREAMING SESSION $sessionId SUDAH BERHENTI!!\n";
+        } else {
+            echo "GAGAL MEMBERHENTIKAN STREAMING SESSION: $sessionId | ERROR: " . $json_response['err_msg'];
         }
     } catch (Exception $e) {
-        echo $e->getMessage() . PHP_EOL;
+        // Handle exception
+        echo $e->getMessage();
     }
 }
 
