@@ -31,7 +31,7 @@ if (!$bannedWords) {
 
 
 echo "SEDANG MENGAMBIL DATA LIVE..." . PHP_EOL;
-echo "LOGIN WITH KEY: $ey" . PHP_EOL;
+echo "LOGIN WITH KEY: $key" . PHP_EOL;
 
 // INI JUGA
 getData();
