@@ -1,34 +1,38 @@
 <?php
-date_default_timezone_set('Asia/Jakarta');
-
+$bannedUsers = [];
+$processedMessages = [];
+$lastBotMessageID = [];
 // JANGAN DIUBAH YANG INI
+$keyFilePath = 'key.txt';
+$key = readKeyFromFile($keyFilePath);
+
+if (!$key) {
+    error_log('KEY TIDAK DITEMUKAN!! TOLONG CEK KEMBALI FILE key.txt');
+    exit(1);
+}
+
+
 $cookiesFilePath = 'cookie.txt';
 $cookies = readCookiesFromFile($cookiesFilePath);
 
 if (!$cookies) {
-    error_log('Cookies not available. Please check your cookies.txt file.');
+    error_log('COOKIE TIDAK DITEMUKAN!! TOLONG CEK KEMBALI FILE cookie.txt');
     exit(1);
 }
+
 
 $banwordFilePath = 'bannedText.txt';
 $bannedWords = readBannedWordsFromFile($banwordFilePath);
 if (!$bannedWords) {
-    error_log('BannedWords not available. Please check your bannedWords.txt file.');
+    error_log('BANNEDWORD TIDAK DITEMUKAN!! TOLONG CEK KEMBALI FILE bannedText.txt');
     exit(1);
 }
 
-// INI JUGA
-$sessionId = null;
-$chatroomId = null;
-$deviceId = null;
 
-$bannedUsers = [];
-$processedMessages = [];
-$lastBotMessageID = [];
+
 echo "SEDANG MENGAMBIL DATA LIVE..." . PHP_EOL;
 // INI JUGA
 getData();
-getSessionId();
 inputLagi:
 echo "-----------|[ MENU ]|-----------" . PHP_EOL;
 echo "SILAHKAN PILIH MENU YANG ANDA INGINKAN" . PHP_EOL . PHP_EOL;
@@ -45,7 +49,7 @@ $menuSelect =  input("TENTUKAN PILIHAN ANDA ??" . PHP_EOL);
 
 if ($menuSelect == 1) {
 
-    getRTMP();
+    getRMTP();
 } elseif ($menuSelect == 2) {
     echo PHP_EOL . "KATA-KATA PADA FILE KEYWORD YANG TERSEDIA" . PHP_EOL;
     $keywordData = include "keyword.php";
@@ -64,18 +68,8 @@ if ($menuSelect == 1) {
 } elseif ($menuSelect == 3) {
 
     while (true) {
-        $startTime = microtime(true); // Waktu awal eksekusi
-        //bagian utama
         GetMessage();
-
-        $endTime = microtime(true); // Waktu setelah eksekusi checkMessage
-        $elapsedTime = $endTime - $startTime; // Waktu yang diperlukan untuk eksekusi checkMessage
-        if ($elapsedTime < 5) {
-            sleep(5 - $elapsedTime);
-        } else {
-            // Jika waktu yang diperlukan lebih dari atau sama dengan 5 detik, tetap tidur selama 3 detik
-            sleep(3);
-        }
+        sleep(3);
     }
 } elseif ($menuSelect == 4) {
 
@@ -148,10 +142,9 @@ if ($menuSelect == 1) {
     } while ($komenMenu == "1" || $komenMenu == "2");
 } elseif ($menuSelect == 6) {
 
-    $keyApi =  readline("[ ! ] KEY => : ");
     echo PHP_EOL . 'AUTO SHOW VOUCHER SETIAP 1 MENIT' . PHP_EOL;
     while (true) {
-        sleep(40); //jika ingin diubah ditambah 30, cntoh disamping 40. jika kamu jalankan dia akan delay hampir 1.menit 10detik karena ada delay tambahan dari loading api websitenya
+        sleep(30); //jika ingin diubah ditambah 30, cntoh disamping 40. jika kamu jalankan dia akan delay hampir 1.menit 10detik karena ada delay tambahan dari loading api websitenya
         showVoc();
         echo 'JEDA... SHOW VOUCHER LAGI SETELAH 1MENIT' . PHP_EOL;
     }
@@ -189,180 +182,100 @@ function input($text)
     $select = trim(fgets(STDIN));
     return $select;
 }
-
-function readCookiesFromFile($filePath)
-{
-    try {
-        $cookies = file_get_contents($filePath);
-        return trim($cookies);
-    } catch (Exception $error) {
-        error_log('Error reading cookies from file: ' . $error->getMessage());
-        return null;
-    }
-}
-
-function readBannedWordsFromFile($filePath)
-{
-    try {
-        $bannedWords = file_get_contents($filePath);
-        $bannedWords = explode(PHP_EOL . "", $bannedWords);
-        // Menghapus string kosong atau yang hanya terdiri dari spasi dari $bannedWords
-        $bannedWords = array_filter($bannedWords, function ($word) {
-            return trim($word) !== '';
-        });
-        $bannedWords = array_map('trim', $bannedWords);
-        return $bannedWords;
-    } catch (Exception $error) {
-        error_log('Error reading banned words from file: ' . $error->getMessage());
-        return [];
-    }
-}
 function getData()
 {
-    global $cookies, $sessionId, $deviceId, $sellerId;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/?cookies=' . urlencode($cookies));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-    curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
-
-    $result = curl_exec($ch);
-    curl_close($ch);
-    $sessionData = json_decode($result, true);
-
-    if ($sessionData) {
-        if ($sessionData['err_code'] === 0 && $sessionData['data'] && $sessionData['data']['session']) {
-            $sessionId = $sessionData['data']['session']['session_id'];
-            $deviceId = $sessionData['data']['session']['device_id'];
-            $sellerId = $sessionData['data']['session']['uid'];
-            $timestamp = $sessionData['data']['session']['start_time'];
-            $Title = $sessionData['data']['session']['title'];
-            $Live = $sessionData['data']['session']['status'];
-            $timestamp_in_seconds = $timestamp / 1000;
-
-            $tanggalMulai = strtoupper(date('d/M', $timestamp_in_seconds));
-            $jamMulai = strtoupper(date('g:i a', $timestamp_in_seconds));
-
-            if ($Live == '1') {
-                $statusLive = 'RUNNING';
-            } else {
-                $statusLive = 'STOP';
-            }
-            echo PHP_EOL . "--------|[ INFO DATA LIVE ]|--------" . PHP_EOL . PHP_EOL;
-            echo "SESSION ID: $sessionId\nLIVE TITLE: $Title\nLIVE TANGGAL: $tanggalMulai $jamMulai\nSTATUS LIVE: $statusLive" . PHP_EOL;
-            // Return the session ID for further use
-        } else {
-            echo 'ERROR MENDAPATKAN SESSIONID : ' . $sessionData['err_msg'] . PHP_EOL;
-            echo 'SILAHKAN CEK COOKIE KAMU, APAKAH SUDAH TERBARU ATAU BELUM!!';
-            exit();
+    global $cookies, $key, $sessionId, $deviceId, $sellerId, $chatroomId, $shareurl, $usersig, $sellerId, $usernameId;
+    try {
+        $getSession = api("https://mas.mba/apiShopee/api.php?key=$key&cookies=" . urlencode($cookies));
+        $sessionData = json_decode($getSession, true);
+        if (!$sessionData) {
+            echo $getSession;
+            exit(1);
         }
-    } else {
-        echo 'Error decoding JSON data.' . PHP_EOL;
+
+        $errCode = $sessionData["err_code"] ?? null;
+        $data = $sessionData["data"] ?? null;
+
+        if ($errCode === 0 && $data && isset($data["session"])) {
+            $session = $data["session"];
+            $sessionId = $session["session_id"] ?? '-';
+            $deviceId = $session["device_id"] ?? '-';
+            $sellerId = $session["uid"] ?? '-';
+            $timestamp = $session["start_time"] ?? 0;
+            $usernameId = $session['username'] ?? '-';
+            $chatroomId = $session['chatroom_id'] ?? '-';
+            $usersig = $data['usersig'] ?? '-';
+            $shareurl = $data['share_url'] ?? '-';
+            $Title = $session["title"] ?? '-';
+            $Live = $session["status"] ?? '-';
+            $timestamp_in_seconds = $timestamp / 1000;
+            $tanggalMulai = strtoupper(date("d/M", $timestamp_in_seconds));
+            $jamMulai = strtoupper(date("g:i a", $timestamp_in_seconds));
+            $statusLive = ($Live == "1") ? "RUNNING" : "STOP";
+
+            echo PHP_EOL . "--------|[ INFO DATA LIVE ]|--------" . PHP_EOL;
+            echo 'LIVE TITLE: ' . $Title . PHP_EOL;
+            echo 'LIVE TANGGAL: ' . $tanggalMulai . ' ' . $jamMulai . PHP_EOL;
+            echo 'STATUS LIVE: ' . $statusLive . PHP_EOL;
+            echo 'USERNAME: ' . $usernameId . PHP_EOL;
+            echo 'SELLER ID: ' . $sellerId . PHP_EOL;
+            echo PHP_EOL . '------|[ SESSION DATA LIVE ]|------' . PHP_EOL;
+            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
+            echo 'DEVICEID LIVE: ' . $deviceId . PHP_EOL;
+            echo 'CHATROOM LIVE: ' . $chatroomId . PHP_EOL;
+            echo 'USERSIG LIVE: ' . $usersig . PHP_EOL;
+            echo PHP_EOL . '------|[ SHARE URL LIVE ]|------' . PHP_EOL;
+            echo 'URL LIVE: ' . $shareurl . PHP_EOL . PHP_EOL;
+        } else {
+            throw new Exception("Error obtaining SESSIONID: " . ($sessionData["err_msg"] ?? 'Unknown Error'));
+        }
+    } catch (Exception $e) {
+        echo $e->getMessage() . PHP_EOL;
     }
 }
 
-function getRTMP()
+function getRMTP()
 {
-    global $cookies, $sessionId, $deviceId, $domainId;
+    global $cookies, $sessionId, $key;
+    try {
+        $getRMTP = api("https://mas.mba/apiShopee/rmtp.php?key=$key&cookies=" . urlencode($cookies));
+        $RMTPdata = json_decode($getRMTP, true);
+        if ($RMTPdata === null && json_last_error() !== JSON_ERROR_NONE) {
+            echo $getRMTP;
+            exit(1);
+        }
 
-    $sessionIdData = "https://live.shopee.co.id/webapi/v1/session/$sessionId/preview?uuid=$deviceId&ver=2";
+        $errCode = $RMTPdata["err_code"] ?? null;
+        $data = $RMTPdata["data"] ?? null;
 
-    $options = [
-        'http' => [
-            'header' => 'Cookie: ' . $cookies,
-            'referer' => "https://live.shopee.co.id/pc/preview?session=$sessionId",
-        ],
-    ];
-
-    $context = stream_context_create($options);
-
-    $sessionIdData = file_get_contents($sessionIdData, false, $context);
-    // Decode JSON string into an array
-    $sessionIdData = json_decode($sessionIdData, true);
-    // print_r($sessionIdData);
-    if ($sessionIdData) {
-        if ($sessionIdData['err_code'] === 0 && $sessionIdData['data'] && $sessionIdData['data']['session']) {
-            $keyLive = $sessionIdData['data']['push_addr_list'][1]['push_url'];
-            $domainId = $sessionIdData['data']['push_addr_list'][1]['domain_id'];
-            $misahKey    = explode("/live/", $keyLive);
-            $rtmp = $misahKey[0] . '/live/';
-            $key = $misahKey[1];
+        if ($errCode === 0 && $data && isset($data["push_url_list"])) {
+            $keyLive = $data['push_url_list'][1];
+            $misahKey = preg_split("/\/(live|livestreaming)\//", $keyLive, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+            $type = $misahKey[0];
+            $key = $type . '/' . $misahKey[1] . '/';
+            $rtmp = $misahKey[2];
             echo PHP_EOL . '===| STREAMING KEY INFO |===' . PHP_EOL . PHP_EOL;
-            echo 'DOMAINID: ' . $domainId . PHP_EOL;
+            echo 'DASHBOARD LIVE: https://creator.shopee.co.id/dashboard/live/' . $sessionId . PHP_EOL;
+            echo 'RTMP FULL: ' . $keyLive . PHP_EOL . PHP_EOL;
             echo 'KEY: ' . $key . PHP_EOL;
             echo 'RTMP: ' . $rtmp . PHP_EOL;
-            echo 'RTMP/KEY: ' . $keyLive . PHP_EOL;
-            echo 'DASHBOARD LIVE: https://creator.shopee.co.id/dashboard/live/' . $sessionId . PHP_EOL . PHP_EOL;
             echo PHP_EOL . '===| CARA LIVE SHOOPE |===' . PHP_EOL;
             echo 'CARA LIVENYA GIMANA??,' . PHP_EOL;
             echo 'LIVE LANGSUNG DARI SHOPE APP, DAN KETIKA SUDAH PLAY LANGSUNG AJH CLOSE APPNYA / HILANGIN,' . PHP_EOL;
             echo 'LALU START DARI MULTI LOOP / TOOLS YANG KALIAN GUNAKAN!!' . PHP_EOL . PHP_EOL;
             echo 'DATA RTMP DISAVE PADA FILE dataRTMP.txt' . PHP_EOL . PHP_EOL;
             $fp = fopen("dataRTMP.txt", 'w');
-            fwrite($fp, "RTMP/KEY: $keyLive\n\nKEY: $key");
+            fwrite($fp, "RMTP: $rtmp\nKEY: $key\n\nRTMP FULL: $keyLive");
             fclose($fp);
-            // Return the session ID for further use
         } else {
-            echo 'ERROR MENDAPATKAN SESSIONID : ' . $sessionIdData['err_msg'] . PHP_EOL;
+            echo 'ERROR MENDAPATKAN SESSIONID : ' . $RMTPdata['err_msg'] . PHP_EOL;
         }
-    } else {
-        echo 'Error decoding JSON data.' . PHP_EOL;
-    }
-}
-//get data live
-function getSessionId()
-{
-    global $cookies, $sessionId, $chatroomId, $deviceId, $usersig, $sellerId;
-
-    $sessionIdData = "https://live.shopee.co.id/webapi/v1/session/$sessionId/preview?uuid=$deviceId&ver=2";
-
-    $options = [
-        'http' => [
-            'header' => 'Cookie: ' . $cookies,
-            'referer' => "https://live.shopee.co.id/pc/preview?session=$sessionId",
-        ],
-    ];
-
-    $context = stream_context_create($options);
-
-    $sessionIdData = file_get_contents($sessionIdData, false, $context);
-
-    // Decode JSON string into an array
-    $sessionIdData = json_decode($sessionIdData, true);
-
-    if ($sessionIdData) {
-        if ($sessionIdData['err_code'] === 0 && $sessionIdData['data'] && $sessionIdData['data']['session']) {
-            $usernameId = $sessionIdData['data']['session']['username'];
-            $chatroomId = $sessionIdData['data']['session']['chatroom_id'];
-            $usersig = $sessionIdData['data']['usersig'];
-
-            echo PHP_EOL . '------|[ SESSION DATA LIVE ]|------' . PHP_EOL;
-            echo 'USERNAME: ' . $usernameId . PHP_EOL;
-            echo 'SELLER ID: ' . $sellerId . PHP_EOL;
-            echo 'DEVICEID LIVE: ' . $deviceId . PHP_EOL;
-            echo 'CHATROOM LIVE: ' . $chatroomId . PHP_EOL;
-            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
-            echo 'USERSIG LIVE: ' . $usersig . PHP_EOL . PHP_EOL;
-            // Return the session ID for further use
-        } else {
-            echo 'ERROR MENDAPATKAN SESSIONID : ' . $sessionIdData['err_msg'] . PHP_EOL;
-        }
-    } else {
-        echo 'Error decoding JSON data.' . PHP_EOL;
+    } catch (Exception $e) {
+        echo $e->getMessage() . PHP_EOL;
     }
 }
 
-function containsBannedWords($content)
-{
-    global $bannedWords;
 
-    $lowerContent = strtolower($content);
-    return array_reduce($bannedWords, function ($carry, $word) use ($lowerContent) {
-        return $carry || strpos($lowerContent, strtolower($word)) !== false;
-    }, false);
-}
-
-//ban user
 function banUser($uid)
 {
     global $sessionId, $cookies;
@@ -563,42 +476,65 @@ function pinkomenLive($message)
 
 function showVoc()
 {
-    global $cookies, $sessionId, $keyApi;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/api.php?key=' . $keyApi . '&sessionid=' . $sessionId . '&cookies=' . urlencode($cookies));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-    curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+    global $cookies, $sessionId, $key;
 
-    $result = curl_exec($ch);
-    curl_close($ch);
-    echo $result;
+    try {
+        $url = 'https://mas.mba/apiShopee/voucher.php?key=' . $key . '&sessionid=' . $sessionId . '&cookies=' . urlencode($cookies);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+
+        $result = curl_exec($ch);
+
+        if ($result === false) {
+            throw new Exception('Curl error: ' . curl_error($ch));
+        }
+
+        curl_close($ch);
+        echo $result;
+    } catch (Exception $e) {
+        echo 'Error: ' . $e->getMessage() . PHP_EOL;
+    }
 }
 
 function endLive()
 {
     global $cookies, $sessionId;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/end.php?sessionid=' . $sessionId . '&cookies=' . urlencode($cookies));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-    curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+    try {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://mas.mba/apiShopee/end.php?sessionid=' . $sessionId . '&cookies=' . urlencode($cookies));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
 
-    $result = curl_exec($ch);
-    curl_close($ch);
-    $json_response = json_decode($result, true);
+        $result = curl_exec($ch);
 
-    if ($json_response !== null) {
-        $err_code = isset($json_response['err_code']) ? $json_response['err_code'] : '';
-        $err_msg = isset($json_response['err_msg']) ? $json_response['err_msg'] : '';
 
-        if ($err_code === '3000057') {
-            echo "STREAMING SESSION $sessionId TIDAK ADA LIVE!!\n";
-        } elseif ($err_code === '0') {
-            echo "BERHASIL MEMBERHENTIKAN STREAMING SESSION: $sessionId\n";
-        } else {
-            echo "GAGAL MEMBERHENTIKAN STREAMING SESSION: $sessionId\nERROR: $err_msg";
+        curl_close($ch);
+
+        if ($result === null && json_last_error() !== JSON_ERROR_NONE) {
+            echo $result;
+            exit(1);
         }
+        $json_response = json_decode($result, true);
+
+        if ($json_response !== null) {
+            $err_code = isset($json_response['err_code']) ? $json_response['err_code'] : '';
+            $err_msg = isset($json_response['err_msg']) ? $json_response['err_msg'] : '';
+
+            if ($err_code === '3000057') {
+                echo "STREAMING SESSION $sessionId TIDAK ADA LIVE!!\n";
+            } elseif ($err_code === '0') {
+                echo "BERHASIL MEMBERHENTIKAN STREAMING SESSION: $sessionId\n";
+            } else {
+                echo "GAGAL MEMBERHENTIKAN STREAMING SESSION: $sessionId\nERROR: $err_msg";
+            }
+        }
+    } catch (Exception $e) {
+        echo $e->getMessage() . PHP_EOL;
     }
 }
 
@@ -927,5 +863,68 @@ function showItem()
         }
     } else {
         echo 'Error decoding JSON data.' . PHP_EOL;
+    }
+}
+
+
+
+function api($url)
+{
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+    curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
+
+    $resultApi = curl_exec($ch);
+    curl_close($ch);
+    return $resultApi;
+}
+
+
+function readBannedWordsFromFile($filePath)
+{
+    try {
+        $bannedWords = explode(PHP_EOL . "", file_get_contents($filePath));
+        // Menghapus string kosong atau yang hanya terdiri dari spasi dari $bannedWords
+        $bannedWords = array_filter($bannedWords, function ($word) {
+            return trim($word) !== '';
+        });
+        $bannedWords = array_map('trim', $bannedWords);
+        return $bannedWords;
+    } catch (Exception $error) {
+        error_log('Error reading banned words from file: ' . $error->getMessage());
+        return [];
+    }
+}
+
+function readKeyFromFile($filePath)
+{
+    try {
+        $cookies = file_get_contents($filePath);
+        return trim($cookies);
+    } catch (Exception $error) {
+        error_log('Error reading cookies from file: ' . $error->getMessage());
+        return null;
+    }
+}
+function containsBannedWords($content)
+{
+    global $bannedWords;
+
+    $lowerContent = strtolower($content);
+    return array_reduce($bannedWords, function ($carry, $word) use ($lowerContent) {
+        return $carry || strpos($lowerContent, strtolower($word)) !== false;
+    }, false);
+}
+
+function readCookiesFromFile($filePath)
+{
+    try {
+        $cookies = file_get_contents($filePath);
+        return trim($cookies);
+    } catch (Exception $error) {
+        error_log('Error reading cookies from file: ' . $error->getMessage());
+        return null;
     }
 }
