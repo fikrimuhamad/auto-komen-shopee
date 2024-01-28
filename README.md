@@ -10,8 +10,6 @@ cara run: <b>php runShopee.php</b><br><br>
 
 #
 # AA KASIAN AA
-<b>QR SOPIPAY</b>
-![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/b41ba3f9-932b-4a5b-8bcf-3790c718482c)
+<b>QR SOPIPAY | QR DANA</b><br>
+![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/ce3861fd-b5e2-4bf0-9359-6ceba85baddb)
 
-<br><b>QR DANA</b>
-![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/5c1a8615-7ad0-4bb8-a0a2-610f5eae1197)
