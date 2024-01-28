@@ -229,7 +229,7 @@ function getData()
             echo PHP_EOL . '------|[ SHARE URL LIVE ]|------' . PHP_EOL;
             echo 'URL LIVE: ' . $shareurl . PHP_EOL . PHP_EOL;
         } else {
-            throw new Exception("Error obtaining SESSIONID: " . ($sessionData["err_msg"] ?? 'Unknown Error'));
+            throw new Exception("ERROR GET SESSIONID, MSG: " . ($sessionData["err_msg"] ?? 'Unknown Error'));
         }
     } catch (Exception $e) {
         echo $e->getMessage() . PHP_EOL;
