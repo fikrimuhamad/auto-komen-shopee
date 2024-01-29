@@ -165,7 +165,7 @@ if ($menuSelect == 1) {
         // memunculkan result detik / 60
         echo 'MENGIRIM PESAN BERULANG SETIAP ' . number_format($menit) . ' MENIT' . PHP_EOL;
         while (true) {
-            komenLiveNgulang($katakataSHOPEE);
+            komenLive($katakataSHOPEE);
             echo 'JEDA... MENGIRIM KOMEN LAGI SETELAH ' . number_format($menit) . ' MENIT' . PHP_EOL;
             sleep($jedaNgulang);
         }
@@ -188,86 +188,88 @@ function input($text)
 function getData()
 {
     global $cookies, $key, $sessionId, $deviceId, $sellerId, $chatroomId, $shareurl, $usersig, $sellerId, $usernameId;
-        $getSession = api("https://api-shopee.mas.mba/?key=$key&cookies=" . urlencode($cookies));
-        $sessionData = json_decode($getSession, true);
-        if (!$sessionData) {
-            echo $getSession;
-            exit(1);
-        }
+    $getSession = api("https://api-shopee.mas.mba/apiSess.php?key=$key&cookies=" . urlencode($cookies));
+    $sessionData = json_decode($getSession, true);
+    if (!$sessionData) {
+        echo $getSession;
+        exit(1);
+    }
 
-        $errCode = $sessionData["err_code"] ?? null;
-        $data = $sessionData["data"] ?? null;
+    $errCode = $sessionData["err_code"] ?? null;
+    $data = $sessionData["data"] ?? null;
 
-        if ($errCode === 0 && $data && isset($data["session"])) {
-            $session = $data["session"];
-            $sessionId = $session["session_id"] ?? '-';
-            $deviceId = $session["device_id"] ?? '-';
-            $sellerId = $session["uid"] ?? '-';
-            $timestamp = $session["start_time"] ?? 0;
-            $usernameId = $session['username'] ?? '-';
-            $chatroomId = $session['chatroom_id'] ?? '-';
-            $usersig = $data['usersig'] ?? '-';
-            $shareurl = $data['share_url'] ?? '-';
-            $Title = $session["title"] ?? '-';
-            $Live = $session["status"] ?? '-';
-            $timestamp_in_seconds = $timestamp / 1000;
-            $tanggalMulai = strtoupper(date("d/M", $timestamp_in_seconds));
-            $jamMulai = strtoupper(date("g:i a", $timestamp_in_seconds));
-            $statusLive = ($Live == "1") ? "RUNNING" : "STOP";
+    if ($errCode === 0 && $data && isset($data["session"])) {
+        $session = $data["session"];
+        $sessionId = $session["session_id"] ?? '-';
+        $deviceId = $session["device_id"] ?? '-';
+        $sellerId = $session["uid"] ?? '-';
+        $timestamp = $session["start_time"] ?? 0;
+        $usernameId = $session['username'] ?? '-';
+        $chatroomId = $session['chatroom_id'] ?? '-';
+        $usersig = $data['usersig'] ?? '-';
+        $shareurl = $data['share_url'] ?? '-';
+        $Title = $session["title"] ?? '-';
+        $Live = $session["status"] ?? '-';
+        $timestamp_in_seconds = $timestamp / 1000;
+        $tanggalMulai = strtoupper(date("d/M", $timestamp_in_seconds));
+        $jamMulai = strtoupper(date("g:i a", $timestamp_in_seconds));
+        $statusLive = ($Live == "1") ? "RUNNING" : "STOP";
 
-            echo PHP_EOL . "--------|[ INFO DATA LIVE ]|--------" . PHP_EOL;
-            echo 'LIVE TITLE: ' . $Title . PHP_EOL;
-            echo 'LIVE TANGGAL: ' . $tanggalMulai . ' ' . $jamMulai . PHP_EOL;
-            echo 'STATUS LIVE: ' . $statusLive . PHP_EOL;
-            echo 'USERNAME: ' . $usernameId . PHP_EOL;
-            echo 'SELLER ID: ' . $sellerId . PHP_EOL;
-            echo PHP_EOL . '------|[ SESSION DATA LIVE ]|------' . PHP_EOL;
-            echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
-            echo 'DEVICEID LIVE: ' . $deviceId . PHP_EOL;
-            echo 'CHATROOM LIVE: ' . $chatroomId . PHP_EOL;
-            echo 'USERSIG LIVE: ' . $usersig . PHP_EOL;
-            echo PHP_EOL . '------|[ SHARE URL LIVE ]|------' . PHP_EOL;
-            echo 'URL LIVE: ' . $shareurl . PHP_EOL . PHP_EOL;
-        } else {
-            throw new Exception("Error obtaining SESSIONID: " . ($sessionData["err_msg"] ?? 'Unknown Error'));
-        }
+        echo PHP_EOL . "--------|[ INFO DATA LIVE ]|--------" . PHP_EOL;
+        echo 'LIVE TITLE: ' . $Title . PHP_EOL;
+        echo 'LIVE TANGGAL: ' . $tanggalMulai . ' ' . $jamMulai . PHP_EOL;
+        echo 'STATUS LIVE: ' . $statusLive . PHP_EOL;
+        echo 'USERNAME: ' . $usernameId . PHP_EOL;
+        echo 'SELLER ID: ' . $sellerId . PHP_EOL;
+        echo PHP_EOL . '------|[ SESSION DATA LIVE ]|------' . PHP_EOL;
+        echo 'SESSION LIVE: ' . $sessionId . PHP_EOL;
+        echo 'DEVICEID LIVE: ' . $deviceId . PHP_EOL;
+        echo 'CHATROOM LIVE: ' . $chatroomId . PHP_EOL;
+        echo 'USERSIG LIVE: ' . $usersig . PHP_EOL;
+        echo PHP_EOL . '------|[ SHARE URL LIVE ]|------' . PHP_EOL;
+        echo 'URL LIVE: ' . $shareurl . PHP_EOL . PHP_EOL;
+    } else {
+        throw new Exception("Error obtaining SESSIONID: " . ($sessionData["err_msg"] ?? 'Unknown Error'));
+    }
 }
 
 function getRMTP()
 {
-    global $cookies, $sessionId, $key;
-        $getRMTP = api("https://api-shopee.mas.mba/rmtp.php?key=$key&cookies=" . urlencode($cookies));
-        $RMTPdata = json_decode($getRMTP, true);
-        if ($RMTPdata === null && json_last_error() !== JSON_ERROR_NONE) {
-            echo $getRMTP;
-            exit(1);
-        }
+    getData();
+    global $cookies, $key, $sessionId;
+    $dataRMTP = api("https://api-shopee.mas.mba/rmtp.php?key=$key&sessionid=$sessionId&cookies=" . urlencode($cookies));
+    $RMTPdata = json_decode($dataRMTP, true);
+    if ($RMTPdata === null && json_last_error() !== JSON_ERROR_NONE) {
+        echo $dataRMTP;
+        exit(1);
+    }
 
-        $errCode = $RMTPdata["err_code"] ?? null;
-        $data = $RMTPdata["data"] ?? null;
+    $errCode = $RMTPdata["err_code"] ?? null;
+    $data = $RMTPdata["data"] ?? null;
 
-        if ($errCode === 0 && $data && isset($data["push_url_list"])) {
-            $keyLive = $data['push_url_list'][1];
-            $misahKey = preg_split("/\/(live|livestreaming)\//", $keyLive, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-            $type = $misahKey[0];
-            $key = $type . '/' . $misahKey[1] . '/';
-            $rtmp = $misahKey[2];
-            echo PHP_EOL . '===| STREAMING KEY INFO |===' . PHP_EOL . PHP_EOL;
-            echo 'DASHBOARD LIVE: https://creator.shopee.co.id/dashboard/live/' . $sessionId . PHP_EOL;
-            echo 'RTMP FULL: ' . $keyLive . PHP_EOL . PHP_EOL;
-            echo 'KEY: ' . $key . PHP_EOL;
-            echo 'RTMP: ' . $rtmp . PHP_EOL;
-            echo PHP_EOL . '===| CARA LIVE SHOOPE |===' . PHP_EOL;
-            echo 'CARA LIVENYA GIMANA??,' . PHP_EOL;
-            echo 'LIVE LANGSUNG DARI SHOPE APP, DAN KETIKA SUDAH PLAY LANGSUNG AJH CLOSE APPNYA / HILANGIN,' . PHP_EOL;
-            echo 'LALU START DARI MULTI LOOP / TOOLS YANG KALIAN GUNAKAN!!' . PHP_EOL . PHP_EOL;
-            echo 'DATA RTMP DISAVE PADA FILE dataRTMP.txt' . PHP_EOL . PHP_EOL;
-            $fp = fopen("dataRTMP.txt", 'w');
-            fwrite($fp, "RMTP: $rtmp\nKEY: $key\n\nRTMP FULL: $keyLive");
-            fclose($fp);
-        } else {
-            echo 'ERROR MENDAPATKAN SESSIONID : ' . $RMTPdata['err_msg'] . PHP_EOL;
-        }
+    if ($errCode === 0 && $data && isset($data["push_url_list"])) {
+        $keyLive = $data['push_url_list'][1];
+        $misahKey = preg_split("/\/(live|livestreaming)\//", $keyLive, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        $type = $misahKey[0];
+        $rtmp = $type . '/' . $misahKey[1] . '/';
+        $key = $misahKey[2];
+        echo PHP_EOL . '===| STREAMING KEY INFO |===' . PHP_EOL . PHP_EOL;
+        echo 'DASHBOARD LIVE: https://creator.shopee.co.id/dashboard/live/' . $sessionId . PHP_EOL;
+        echo 'RTMP FULL: ' . $keyLive . PHP_EOL . PHP_EOL;
+        echo 'RTMP: ' . $rtmp . PHP_EOL;
+        echo 'KEY: ' . $key . PHP_EOL;
+        echo PHP_EOL . '===| CARA LIVE SHOOPE |===' . PHP_EOL;
+        echo 'CARA LIVENYA GIMANA??,' . PHP_EOL;
+        echo 'LIVE LANGSUNG DARI SHOPE APP, DAN KETIKA SUDAH PLAY LANGSUNG AJH CLOSE APPNYA / HILANGIN,' . PHP_EOL;
+        echo 'LALU START DARI MULTI LOOP / TOOLS YANG KALIAN GUNAKAN!!' . PHP_EOL . PHP_EOL;
+        echo 'DATA RTMP DISAVE PADA FILE dataRTMP.txt' . PHP_EOL . PHP_EOL;
+        $fp = fopen("dataRTMP.txt", 'w');
+        fwrite($fp, "RMTP: $rtmp\nKEY: $key\n\nRTMP FULL: $keyLive");
+        fclose($fp);
+    } else {
+        echo 'ERROR GET DATA!! MSG : ' . strtoupper($RMTPdata['err_msg']) . PHP_EOL;
+        exit(1);
+    }
 }
 
 
@@ -307,62 +309,29 @@ function banUser($uid)
 }
 
 //bot komen
-function komenLive($message)
+function getDataKomen()
 {
-    global $sessionId, $cookies, $deviceId, $responseKomen, $usersig;
+    global $cookies, $key, $usersig;
+    $dataUI = api("https://api-shopee.mas.mba/dataKomen.php?key=$key&cookies=" . urlencode($cookies));
+    $UIdata = json_decode($dataUI, true);
+    if ($UIdata === null && json_last_error() !== JSON_ERROR_NONE) {
+        echo $dataUI;
+        exit(1);
+    }
 
-    $komenUrl = 'https://live.shopee.co.id/webapi/v1/session/' . $sessionId . '/message';
+    $errCode = $UIdata["err_code"] ?? null;
+    $data = $UIdata["data"] ?? null;
 
-    $postData = [
-        'uuid' => $deviceId,
-        'usersig' => $usersig,
-        'content' => '{"type":101,"content":"' . $message . '"}',
-        'pin' => false,
-    ];
-
-    $options = [
-        'http' => [
-            'header' => [
-                'Cookie: ' . $cookies,
-                'Content-Type: application/json',
-                'referer: https://live.shopee.co.id/pc/live?session=' . $sessionId,
-            ],
-            'method' => 'POST',
-            'content' => json_encode($postData),
-        ],
-    ];
-
-    $context = stream_context_create($options);
-
-    $responseKomen = file_get_contents($komenUrl, false, $context);
-
-    if ($responseKomen === FALSE) {
-        echo 'Error fetching data.';
+    if ($errCode === 0 && $data && isset($data["usersig"])) {
+        $usersig = $data['usersig'];
     } else {
-        // Parse JSON response
-        $responseData = json_decode($responseKomen, true);
-
-        // Check if err_msg exists
-        if (isset($responseData['err_msg'])) {
-            $errMsg = $responseData['err_msg'];
-
-            // Add your custom handling for err_msg
-            if ($errMsg === 'YourCustomErrorMessage') {
-                echo 'Custom Error Handling: ' . $errMsg . PHP_EOL;
-            } else {
-                echo 'STATUS PESAN BOT: ' . strtoupper($errMsg);
-            }
-        }
-
-        // Check if data.message_id exists
-        if (isset($responseData['data']['message_id'])) {
-            echo " ( " . $responseData['data']['message_id'] . " )" . PHP_EOL . PHP_EOL;
-        }
+        echo 'ERROR GET DATA!! MSG : ' . strtoupper($UIdata['err_msg']) . PHP_EOL;
+        exit(1);
     }
 }
-
-function komenLiveNgulang($message)
+function komenLive($message)
 {
+    getDataKomen();
     global $sessionId, $cookies, $deviceId, $responseKomen, $usersig;
 
     $komenUrl = 'https://live.shopee.co.id/webapi/v1/session/' . $sessionId . '/message';
@@ -417,6 +386,7 @@ function komenLiveNgulang($message)
 
 function pinkomenLive($message)
 {
+    getDataKomen();
     global $sessionId, $cookies, $deviceId, $responseKomen, $usersig;
 
     $komenUrl = 'https://live.shopee.co.id/webapi/v1/session/' . $sessionId . '/message';
