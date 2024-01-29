@@ -4,7 +4,7 @@ date_default_timezone_set('Asia/Jakarta');
 $bannedUsers = [];
 $processedMessages = [];
 $lastBotMessageID = [];
-// JANGAN DIUBAH YANG INI
+// JANGAN DIUBAH YANG INI 
 $keyFilePath = 'key.txt';
 $key = readKeyFromFile($keyFilePath);
 
