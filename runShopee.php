@@ -32,7 +32,6 @@ if (!$bannedWords) {
 
 echo "SEDANG MENGAMBIL DATA LIVE..." . PHP_EOL;
 echo "LOGIN WITH KEY: $key" . PHP_EOL;
-
 // INI JUGA
 getData();
 inputLagi:
@@ -188,7 +187,7 @@ function getData()
 {
     global $cookies, $key, $sessionId, $deviceId, $sellerId, $chatroomId, $shareurl, $usersig, $sellerId, $usernameId;
     try {
-        $getSession = api("https://mas.mba/apiShopee/api.php?key=$key&cookies=" . urlencode($cookies));
+        $getSession = api("https://api-shopee.mas.mba/?key=$key&cookies=" . urlencode($cookies));
         $sessionData = json_decode($getSession, true);
         if (!$sessionData) {
             echo $getSession;
@@ -229,7 +228,7 @@ function getData()
             echo PHP_EOL . '------|[ SHARE URL LIVE ]|------' . PHP_EOL;
             echo 'URL LIVE: ' . $shareurl . PHP_EOL . PHP_EOL;
         } else {
-            throw new Exception("ERROR GET SESSIONID, MSG: " . ($sessionData["err_msg"] ?? 'Unknown Error'));
+            throw new Exception("Error obtaining SESSIONID: " . ($sessionData["err_msg"] ?? 'Unknown Error'));
         }
     } catch (Exception $e) {
         echo $e->getMessage() . PHP_EOL;
@@ -240,7 +239,7 @@ function getRMTP()
 {
     global $cookies, $sessionId, $key;
     try {
-        $getRMTP = api("https://mas.mba/apiShopee/rmtp.php?key=$key&cookies=" . urlencode($cookies));
+        $getRMTP = api("https://api-shopee.mas.mba/rmtp.php?key=$key&cookies=" . urlencode($cookies));
         $RMTPdata = json_decode($getRMTP, true);
         if ($RMTPdata === null && json_last_error() !== JSON_ERROR_NONE) {
             echo $getRMTP;
@@ -481,7 +480,7 @@ function showVoc()
     global $cookies, $sessionId, $key;
 
     try {
-        $url = 'https://mas.mba/apiShopee/voucher.php?key=' . $key . '&sessionid=' . $sessionId . '&cookies=' . urlencode($cookies);
+        $url = 'https://api-shopee.mas.mba/voucher.php?key=' . $key . '&sessionid=' . $sessionId . '&cookies=' . urlencode($cookies);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -520,23 +519,10 @@ function endLive()
     ];
 
     $context = stream_context_create($requestHeaders);
+    $response = file_get_contents($apiUrl, false, $context);
 
-    try {
-        $response = file_get_contents($apiUrl, false, $context);
-        $json_response = json_decode($response, true);
-        if ($json_response['err_code'] === 0) {
-            echo "BERHASIL MEMBERHENTIKAN STREAMING SESSION: $sessionId\n";
-        } elseif ($json_response['err_code'] === 3000057) {
-            echo "STREAMING SESSION $sessionId TIDAK ADA LIVE!!\n";
-        } elseif ($json_response['err_code'] === 3000059) {
-            echo "STREAMING SESSION $sessionId SUDAH BERHENTI!!\n";
-        } else {
-            echo "GAGAL MEMBERHENTIKAN STREAMING SESSION: $sessionId | ERROR: " . $json_response['err_msg'];
-        }
-    } catch (Exception $e) {
-        // Handle exception
-        echo $e->getMessage();
-    }
+    $json_response = json_decode($response, true);
+    print_r($json_response);
 }
 
 //auto komen + ban filter kata-kata
