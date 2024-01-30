@@ -9,7 +9,5 @@ cara run: <b>php runShopee.php</b><br><br>
 
 
 #
-# AA KASIAN AA
-<b>QR SOPIPAY | QR DANA</b><br>
-![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/ce3861fd-b5e2-4bf0-9359-6ceba85baddb)
-
+# CARA DAPETIN KEY
+<b>KEY BISA KALIAN DAPATKAN DENGAN MEMBAYAR Rp 100.000 UNTUK MENDAPATKAN AKSESS KEY!!<br>PEMBELIAN BISA LANGSUNG KE EMAIL DENGAN FORMAT JUDUL PEMBELIAN KEY, SELAIN JUDUL DIATAS SAYA TIDAK BALAS<br>EMAIL: masfikrimuhamad@gmail.com</b>
