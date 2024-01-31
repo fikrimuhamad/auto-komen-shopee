@@ -1,9 +1,13 @@
 <?php
 return array(
-    //info data
+    // UBAH KATA-KATA DIBWAH INI
+    // JIKA KALIAN INGIN MENGUBAH KATA-KATA DEFAULT JIKA TIDAK ADA DI KEYWORD!!
+    // result default ketika dijalankan:
+    // Hallo Kak fikk, Maaf kak kita gak bisa spill semua ya kak, Kakak bisa langsung cek Ulasan dan Gambar jika kepo sama produknya.
+    "katakatasapa" => "Hallo Kak",
+    "katakatadefault" => "Semua barang sesuai dengan gambar ya kak, bisa langsung cek Keranjang, silakan diorder kakak.",
     // TEXT KEYWORD => KETERANGAN 
-    // MISALKAN ADA KOMENTAR 
-    //stock etalases 1 : maka yang akan muncul bagian stock, begitu juga yang lainnya
+    // KALIAN BISA UBAH MULAI DARI BAWAH INI!!
     "size" => "Size Chart :\nM= LD 85.PJ 64 CM (BB 30-40KG)\nL = LD 100.PJ 69 CM (BB 45-55KG)\nXL= LD 110.PJ 72 CM (BB 60-70KG)\nXXL LD 116.PJ 74 CM (BB 75-85KG)",
     "spill" => "Maaf kak kita gak bisa spill semua ya kak, Kakak bisa langsung cek Ulasan dan Gambar jika kepo sama produknya.",
     "ori" => "Bahannya dijamin bagus ya kak, silakan diorder kakak.",
