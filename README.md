@@ -5,8 +5,7 @@
 JANGAN LUPA SEBELUM DIJALANKAN, HARUS LIVE DULU BARU DIJALANKAN. SOALNYA UNTUK AMBIL DATA BOT!!<br>
 cara run: <b>php runShopee.php</b><br><br>
 
-![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/d1cb4fbc-5d28-42bb-84b0-91a38bdc5bc3)
-
+![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/5d244c6c-0ec2-40f5-bc9e-03bafd285d08)
 
 #
 # CARA DAPETIN KEY
