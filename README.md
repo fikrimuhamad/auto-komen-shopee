@@ -5,7 +5,7 @@
 JANGAN LUPA SEBELUM DIJALANKAN, HARUS LIVE DULU BARU DIJALANKAN. SOALNYA UNTUK AMBIL DATA BOT!!<br>
 cara run: <b>php runShopee.php</b><br><br>
 
-# LAST UPDATE TGL 04/FEBUARI : 23.10
+# LAST UPDATE 04/FEBRUARI/2024
 ![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/5b75c2c4-d5e0-4a72-bc60-479370729359)
 
 #
