@@ -9,7 +9,7 @@ JANGAN LUPA SEBELUM DIJALANKAN, HARUS LIVE DULU BARU DIJALANKAN. SOALNYA UNTUK A
 cara run: <b>php runShopee.php</b><br><br>
 
 # LAST UPDATE 04/FEBRUARI/2024
-![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/5b75c2c4-d5e0-4a72-bc60-479370729359)
+![image](https://github.com/fikrimuhamad/auto-komen-shopee/assets/25825165/39f9dd29-ee1a-4a4e-acc2-d407dcb058b8)
 
 #
 # CARA DAPETIN KEY
